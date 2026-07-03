@@ -51,7 +51,7 @@
 - **无障碍**：图标型控件均有 VoiceOver 标签（悬浮 ＋ / 月份箭头 / 键盘 ⌫）。
 - **动效**：新账单入列表淡入（§5.2.5）；键盘/分类/入口按钮按压缩放（复刻原型 `style-active`，见 `Support/PressableStyle.swift`）；保存成功触感反馈。
 - **图表交互**：点甜甜圈扇区高亮该分类并在圆心显示金额（§4.5，`.chartAngleSelection`）。
-- **安全区**：明细 / 图表用系统安全区自动避让状态栏（不再硬编码顶部间距）。
+- **安全区 / 大标题**：明细 / 图表 / 设置三页统一用系统 `NavigationStack` 大标题（`navigationTitle` + `.large`），顶部间距与滚动收起行为完全一致，不再硬编码顶部间距、切页标题不跳位。
 - **品牌启动屏**：橙底 `LaunchBackground` 色值 + 部分清单 `Configs/Info.plist`（`UILaunchScreen`）。清单放在同步分组外，避免被当资源重复打包；`GENERATE_INFOPLIST_FILE=YES` 仍生成并合并其余键。
 - **超小屏**：记账页分类区放入弹性 `ScrollView`，空间不足时网格内部滚动，金额与键盘始终完整可见；参考机型 390×844 观感不变。
 

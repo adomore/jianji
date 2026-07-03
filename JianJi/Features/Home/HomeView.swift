@@ -32,56 +32,52 @@ struct HomeView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 0) {
-                Text("明细")
-                    .font(.system(size: 34, weight: .bold))
-                    .foregroundStyle(t.text)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-                    .padding(.top, 8)
-                    .padding(.bottom, 12)
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    MonthSummaryCard(
+                        month: month, expense: monthExpense, income: monthIncome,
+                        onPrev: { shift(-1) }, onNext: { shift(1) }
+                    )
+                    .padding(.horizontal, 16)
 
-                MonthSummaryCard(
-                    month: month, expense: monthExpense, income: monthIncome,
-                    onPrev: { shift(-1) }, onNext: { shift(1) }
-                )
-                .padding(.horizontal, 16)
-
-                if monthTx.isEmpty {
-                    EmptyStateView(onAdd: onAdd)
-                        .padding(.top, 80)
-                } else {
-                    ForEach(days) { group in
-                        DaySection(group: group, onTapRow: { editing = $0 }, onDelete: { pendingDelete = $0 })
+                    if monthTx.isEmpty {
+                        EmptyStateView(onAdd: onAdd)
+                            .padding(.top, 80)
+                    } else {
+                        ForEach(days) { group in
+                            DaySection(group: group, onTapRow: { editing = $0 }, onDelete: { pendingDelete = $0 })
+                        }
+                        .padding(.top, 6)
                     }
-                    .padding(.top, 6)
                 }
+                .padding(.top, 4)
+                .padding(.bottom, 120)           // clear the floating tab bar
+                .animation(.easeInOut(duration: 0.25), value: all.count)  // new rows fade in (PRD §5.2.5)
             }
-            .padding(.top, 8)                // ScrollView already insets below the status bar
-            .padding(.bottom, 120)           // clear the floating tab bar
-            .animation(.easeInOut(duration: 0.25), value: all.count)  // new rows fade in (PRD §5.2.5)
-        }
-        .background(t.groupBg.ignoresSafeArea())
-        .scrollIndicators(.hidden)
-        // Swipe left-right to change month (kept simultaneous so vertical scroll still works).
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 30)
-                .onEnded { v in
-                    guard abs(v.translation.width) > abs(v.translation.height) * 1.5 else { return }
-                    if v.translation.width < -50 { shift(1) }
-                    else if v.translation.width > 50 { shift(-1) }
-                }
-        )
-        .sheet(item: $editing) { tx in
-            TransactionDetailView(transaction: tx)
-                .environment(\.theme, t)
-        }
-        .confirmationDialog("删除这笔账单？", isPresented: deleteBinding, titleVisibility: .visible) {
-            Button("删除", role: .destructive) { performDelete() }
-            Button("取消", role: .cancel) { pendingDelete = nil }
-        } message: {
-            Text("删除后无法恢复。")
+            .background(t.groupBg.ignoresSafeArea())
+            .scrollIndicators(.hidden)
+            .navigationTitle("明细")             // system large title → consistent with 设置
+            .navigationBarTitleDisplayMode(.large)
+            // Swipe left-right to change month (kept simultaneous so vertical scroll still works).
+            .simultaneousGesture(
+                DragGesture(minimumDistance: 30)
+                    .onEnded { v in
+                        guard abs(v.translation.width) > abs(v.translation.height) * 1.5 else { return }
+                        if v.translation.width < -50 { shift(1) }
+                        else if v.translation.width > 50 { shift(-1) }
+                    }
+            )
+            .sheet(item: $editing) { tx in
+                TransactionDetailView(transaction: tx)
+                    .environment(\.theme, t)
+            }
+            .confirmationDialog("删除这笔账单？", isPresented: deleteBinding, titleVisibility: .visible) {
+                Button("删除", role: .destructive) { performDelete() }
+                Button("取消", role: .cancel) { pendingDelete = nil }
+            } message: {
+                Text("删除后无法恢复。")
+            }
         }
     }
 

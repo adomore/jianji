@@ -42,24 +42,23 @@ struct ChartsView: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
-                Text("图表")
-                    .font(.system(size: 34, weight: .bold)).foregroundStyle(t.text)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 20)
-
-                monthSwitcher
-                totalsRow
-                donutCard
-                if !slices.isEmpty { rankingCard }
-                dailyCard
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 16) {
+                    monthSwitcher
+                    totalsRow
+                    donutCard
+                    if !slices.isEmpty { rankingCard }
+                    dailyCard
+                }
+                .padding(.top, 4)
+                .padding(.bottom, 120)           // clear the floating tab bar
             }
-            .padding(.top, 8)                // ScrollView already insets below the status bar
-            .padding(.bottom, 120)           // clear the floating tab bar
+            .background(t.groupBg.ignoresSafeArea())
+            .scrollIndicators(.hidden)
+            .navigationTitle("图表")             // system large title → consistent with 明细 / 设置
+            .navigationBarTitleDisplayMode(.large)
         }
-        .background(t.groupBg.ignoresSafeArea())
-        .scrollIndicators(.hidden)
     }
 
     private var monthSwitcher: some View {
