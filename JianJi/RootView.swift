@@ -59,7 +59,9 @@ private struct TabBar: View {
 
     var body: some View {
         ZStack {
-            // Blurred bar background with hairline top border.
+            // Blurred bar background with hairline top border — bleeds under the
+            // home indicator to the screen's bottom edge (随手记 style), so no page
+            // background shows below the bar.
             Rectangle()
                 .fill(.regularMaterial)
                 .overlay(t.bar)
@@ -67,6 +69,7 @@ private struct TabBar: View {
                     Rectangle().fill(t.sep).frame(height: 0.5)
                 }
                 .frame(height: 82)
+                .ignoresSafeArea(edges: .bottom)
 
             HStack(spacing: 0) {
                 item(.list, symbol: "list.bullet", label: "明细")
@@ -80,15 +83,15 @@ private struct TabBar: View {
             // Floating add button — lifted above the bar.
             Button(action: onAdd) {
                 Image(systemName: "plus")
-                    .font(.system(size: 26, weight: .semibold))
+                    .font(.system(size: 27, weight: .semibold))
                     .foregroundStyle(.white)
-                    .frame(width: 58, height: 58)
+                    .frame(width: 60, height: 60)
                     .background(t.accent, in: Circle())
-                    .shadow(color: t.accent.opacity(0.4), radius: 8, x: 0, y: 6)
+                    .shadow(color: t.accent.opacity(0.4), radius: 10, x: 0, y: 6)
             }
             .buttonStyle(PressableStyle(scale: 0.94))
             .simultaneousGesture(LongPressGesture(minimumDuration: 0.4).onEnded { _ in onAddLongPress() })
-            .offset(y: -22)
+            .offset(y: -30)
             .accessibilityLabel("记一笔")
             .accessibilityHint("长按可直接进入语音记账")
         }
