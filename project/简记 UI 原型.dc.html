@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<style>
+body{margin:0;background:#EDEBE6;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Helvetica Neue',sans-serif}
+.dv-turn{padding:40px 44px 36px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+.dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 10px}
+.dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+.dv-tname{font:600 13px/1.2 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;color:#1a1a1a}
+.dv-note{max-width:680px;font:400 12px/1.8 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;color:rgba(0,0,0,.55);margin:0 0 26px}
+.dv-opts{display:flex;flex-wrap:wrap;gap:40px;align-items:flex-start}
+.dv-opt{flex:none;display:flex;flex-direction:column;gap:10px;scroll-margin-top:16px}
+.dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+.dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11.5px/1.4 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;color:rgba(0,0,0,.55)}
+.dv-opt:target .dv-oid{background:#FF9500;color:#fff}
+.dv-next{margin:28px 0 0;font:12px/1.6 -apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;color:rgba(0,0,0,.5)}
+</style>
+</helmet>
+<section class="dv-turn" id="t1">
+  <div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">风格定调 — 明细首页 + 记账弹出页（浅色 / 深色各一版）</span></div>
+  <p class="dv-note">依据 PRD 第 4、5 章。系统字体 SF Pro / PingFang SC；主色 #FF9500（深色模式用 #FF9F0A），收入统一 iOS 绿，其余全部 iOS 17 语义色；卡片圆角、克制留白。可点交互：<a class="dv-oid" href="#1a">1a</a> / <a class="dv-oid" href="#1c">1c</a> 点底部「＋」弹出记账页；记账页内支出/收入切换、分类点选、数字键盘、备注输入均可操作，点「完成」会真的把这笔账写进列表并更新月度汇总，「取消」或点遮罩收起。🎤 / 🖼 / 日期为占位入口 — 语音确认卡片、图表页、空状态待你确认风格后第二轮补。</p>
+  <div class="dv-opts">
+    <div class="dv-opt" id="1a">
+      <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>明细首页 · 浅色（点「＋」试试）</div>
+      <dc-import name="HomeScreen" hint-size="390px,844px"></dc-import>
+    </div>
+    <div class="dv-opt" id="1b">
+      <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>记账弹出页 · 浅色（键盘可输入，完成会入账）</div>
+      <dc-import name="HomeScreen" start-open="{{ true }}" hint-size="390px,844px"></dc-import>
+    </div>
+    <div class="dv-opt" id="1c">
+      <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>明细首页 · 深色</div>
+      <dc-import name="HomeScreen" dark="{{ true }}" hint-size="390px,844px"></dc-import>
+    </div>
+    <div class="dv-opt" id="1d">
+      <div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>记账弹出页 · 深色</div>
+      <dc-import name="HomeScreen" dark="{{ true }}" start-open="{{ true }}" hint-size="390px,844px"></dc-import>
+    </div>
+  </div>
+  <p class="dv-next">下一步可以说："风格确认，补语音确认卡片、图表页、空状态" · "月度卡片换成白底橙字" · "分类选中态改成描边不填充"</p>
+</section>
+</x-dc>
+</body>
+</html>
