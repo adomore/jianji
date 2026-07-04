@@ -70,8 +70,13 @@ enum SeedData {
             defaultLedger = l
         }
         // Reassign orphan bills (created before multi-ledger existed) to the default book.
+        // Gated by a one-time flag so we scan the whole store only once (right after the
+        // multi-ledger update); every later launch skips it entirely and stays fast.
+        let migratedKey = "ledgerOrphanMigration.v1.done"
+        guard !UserDefaults.standard.bool(forKey: migratedKey) else { return }
         let all = (try? context.fetch(FetchDescriptor<Transaction>())) ?? []
         for tx in all where tx.ledger == nil { tx.ledger = defaultLedger }
         try? context.save()
+        UserDefaults.standard.set(true, forKey: migratedKey)
     }
 }

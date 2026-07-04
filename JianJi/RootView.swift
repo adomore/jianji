@@ -68,6 +68,7 @@ struct RootView: View {
                 if lockEnabled { appLock.lock() }
                 privacy.hide()          // re-hide private bills when leaving the app
                 ledgerLock.relock()     // re-lock private 账本
+                showSplash = true       // 重新武装：每次回到前台都再放一次启动页
             }
         }
         .onChange(of: lockEnabled) { _, _ in
@@ -124,7 +125,7 @@ private struct TabBar: View {
             }
             .buttonStyle(PressableStyle(scale: 0.94))
             .simultaneousGesture(LongPressGesture(minimumDuration: 0.4).onEnded { _ in onAddLongPress() })
-            .offset(y: -41)
+            .offset(y: -41)   // 按钮中心落在栏顶线上：约 50% 凸出栏外，水平居中
             .accessibilityLabel("记一笔")
             .accessibilityHint("长按可直接进入语音记账")
         }

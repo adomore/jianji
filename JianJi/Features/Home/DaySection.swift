@@ -86,7 +86,7 @@ struct TransactionRow: View {
 
             Text(Fmt.signed(tx.amount, isExpense: tx.isExpense))
                 .font(.system(size: 16, weight: .semibold)).monospacedDigit()
-                .foregroundStyle(tx.isExpense ? t.text : t.green)
+                .foregroundStyle(tx.isExpense ? t.red : t.green)
 
             Image(systemName: "chevron.right")           // tap-to-detail affordance
                 .font(.system(size: 12, weight: .semibold))

@@ -91,4 +91,45 @@ final class AmountInputTests: XCTestCase {
         XCTAssertTrue(a.isEmpty)
         XCTAssertFalse(a.overflow)
     }
+
+    // MARK: cursor editing
+
+    func testCursorInsertInMiddle() {
+        var a = AmountInput()
+        for c in ["5", "5", "5"] { a.tap(c) }   // "555", cursor at end
+        XCTAssertEqual(a.cursor, 3)
+        a.setCursor(2)                          // caret between the 2nd and 3rd 5
+        a.tap("6")                              // insert here
+        XCTAssertEqual(a.display, "5565")
+        XCTAssertEqual(a.cursor, 3)
+    }
+
+    func testCursorDeleteInMiddle() {
+        var a = AmountInput()
+        for c in ["5", "5", "5", "6"] { a.tap(c) }   // "5556" — 3rd char is the wrong 5
+        a.setCursor(3)                               // caret right after the 3rd char
+        a.tap("⌫")                                   // delete that wrong 5
+        XCTAssertEqual(a.display, "556")
+        a.tap("6")                                   // → "5566"
+        XCTAssertEqual(a.display, "5566")
+    }
+
+    func testCursorClampedAndDefaultsToEnd() {
+        var a = AmountInput()
+        a.tap("1"); a.tap("2")
+        a.setCursor(99)                          // out of range → clamps to end
+        XCTAssertEqual(a.cursor, 2)
+        a.setCursor(-5)                          // clamps to 0
+        XCTAssertEqual(a.cursor, 0)
+        a.tap("9")                               // insert at front
+        XCTAssertEqual(a.display, "912")
+    }
+
+    func testDecimalCapRespectsCaretInIntegerPart() {
+        var a = AmountInput()
+        for c in ["1", ".", "2", "3"] { a.tap(c) }   // "1.23"
+        a.setCursor(1)                                // caret in the integer part (before ".")
+        a.tap("9")                                    // integer digit still allowed
+        XCTAssertEqual(a.display, "19.23")
+    }
 }

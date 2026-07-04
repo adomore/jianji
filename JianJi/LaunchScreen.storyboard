@@ -15,9 +15,15 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YEN-lb-001">
-                                <rect key="frame" x="51" y="167" width="291" height="346"/>
-                                <fontDescription key="fontDescription" type="system" weight="bold" pointSize="290"/>
+                                <rect key="frame" x="51" y="168" width="291" height="344"/>
+                                <fontDescription key="fontDescription" type="system" weight="bold" pointSize="288"/>
                                 <color key="textColor" red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="简记" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TTL-lb-002">
+                                <rect key="frame" x="164" y="478" width="65" height="44"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="36"/>
+                                <color key="textColor" red="0.10980392156862745" green="0.10980392156862745" blue="0.11764705882352941" alpha="1" colorSpace="calibratedRGB"/>
                                 <nil key="highlightedColor"/>
                             </label>
                         </subviews>
@@ -26,6 +32,8 @@
                         <constraints>
                             <constraint firstItem="YEN-lb-001" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="cx1-yn-000"/>
                             <constraint firstItem="YEN-lb-001" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-86" id="cy1-yn-000"/>
+                            <constraint firstItem="TTL-lb-002" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="cx2-tt-000"/>
+                            <constraint firstItem="TTL-lb-002" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="74" id="cy2-tt-000"/>
                         </constraints>
                     </view>
                 </viewController>

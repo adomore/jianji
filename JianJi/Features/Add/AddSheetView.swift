@@ -24,6 +24,8 @@ struct AddSheetView: View {
     @State private var date = Date()
     @State private var isPrivate = false
     @State private var caretOn = true
+    // 备注聚焦时切到系统输入法（写中文），此时隐藏自带数字键盘，二者不同屏 —— 随手记式互斥。
+    @FocusState private var noteFocused: Bool
 
     @State private var showDatePicker = false
     @State private var toast: String?
@@ -52,9 +54,13 @@ struct AddSheetView: View {
                 .scrollIndicators(.hidden)
             amountRow
             noteAndDateRow
-            entryButtons
-            keypad
-            Color.clear.frame(height: 20)
+            // 编辑备注时收起自带键盘 + 语音/截图入口，把底部让给系统中文输入法，避免两套键盘打架。
+            // 上方的弹性网格会自动吸收留白，把备注行顶到系统键盘正上方。
+            if !noteFocused {
+                entryButtons
+                keypad
+                Color.clear.frame(height: 20)
+            }
         }
         .background(t.card.ignoresSafeArea())
         .overlay { if speech.isRecording { RecordingOverlay(speech: speech).environment(\.theme, t) } }
@@ -149,24 +155,55 @@ struct AddSheetView: View {
     private var amountRow: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Text("¥").font(.system(size: 26, weight: .semibold)).foregroundStyle(t.sec)
-            Text(amount.display)
-                .font(.system(size: 46, weight: .bold))
-                .monospacedDigit()
-                .foregroundStyle(amount.isEmpty ? t.ter : t.text)
-            RoundedRectangle(cornerRadius: 2)
-                .fill(t.accent).frame(width: 3, height: 38)
-                .opacity(caretOn ? 1 : 0)
-                .animation(.easeInOut(duration: 0.5).repeatForever(), value: caretOn)
+            amountDigits
         }
         .padding(.horizontal, 24)
         .padding(.vertical, 6)
+        .contentShape(Rectangle())
+        .onTapGesture { noteFocused = false }   // 点金额空白处即切回自带数字键盘
         .onAppear { caretOn.toggle() }
+    }
+
+    /// The typed amount rendered per-character so a tap positions the caret mid-number
+    /// (fix a wrong digit without deleting everything after it).
+    @ViewBuilder
+    private var amountDigits: some View {
+        let big = Font.system(size: 46, weight: .bold)
+        if amount.isEmpty {
+            HStack(spacing: 0) {
+                caretBar
+                Text("0.00").font(big).monospacedDigit().foregroundStyle(t.ter)
+            }
+        } else {
+            let chars = Array(amount.text)
+            HStack(alignment: .firstTextBaseline, spacing: 0) {
+                ForEach(chars.indices, id: \.self) { i in
+                    if i == amount.cursor { caretBar }
+                    Text(String(chars[i]))
+                        .font(big).monospacedDigit().foregroundStyle(t.text)
+                        .contentShape(Rectangle())
+                        .onTapGesture { amount.setCursor(i + 1); noteFocused = false }
+                }
+                if amount.cursor >= chars.count { caretBar }
+            }
+        }
+    }
+
+    private var caretBar: some View {
+        RoundedRectangle(cornerRadius: 2)
+            .fill(t.accent).frame(width: 3, height: 38)
+            .opacity(caretOn ? 1 : 0)
+            .animation(.easeInOut(duration: 0.5).repeatForever(), value: caretOn)
+            .padding(.horizontal, 0.5)
     }
 
     private var noteAndDateRow: some View {
         HStack(spacing: 10) {
             TextField("添加备注…", text: $note)
                 .font(.system(size: 15)).foregroundStyle(t.text)
+                .focused($noteFocused)
+                .submitLabel(.done)
+                .onSubmit { noteFocused = false }
                 .padding(.horizontal, 12).frame(height: 40)
                 .background(t.fill, in: RoundedRectangle(cornerRadius: 10))
 

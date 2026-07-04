@@ -23,12 +23,12 @@ struct SplashView: View {
         }
         .opacity(visible ? 1 : 0)
         .task {
-            // The system launch screen (LaunchScreen.storyboard) shows a solid ¥ aligned
-            // to this art's ¥, so the hand-off looks like one continuous launch image that
-            // just gains its 简记 + 纹路. Hold briefly, then fade straight into the app.
-            try? await Task.sleep(nanoseconds: 600_000_000)
-            withAnimation(.easeOut(duration: 0.35)) { visible = false }
-            try? await Task.sleep(nanoseconds: 380_000_000)
+            // The system launch screen (LaunchScreen.storyboard) shows the same ¥ + 简记
+            // lockup in the same positions, so the hand-off is seamless — only the 纹路
+            // texture fades in around the ¥. Hold long enough to read it, then fade in.
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+            withAnimation(.easeOut(duration: 0.4)) { visible = false }
+            try? await Task.sleep(nanoseconds: 420_000_000)
             onFinish()
         }
         .accessibilityElement()
