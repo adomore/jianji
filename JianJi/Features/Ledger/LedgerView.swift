@@ -47,7 +47,6 @@ struct LedgerView: View {
             }
             .navigationTitle("账本")
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) { EditButton() }   // 拖动排序
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAdd = true } label: { Image(systemName: "plus") }
                         .accessibilityLabel("新建账本")

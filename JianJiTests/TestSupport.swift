@@ -9,7 +9,7 @@ enum TestSupport {
     @MainActor
     static func makeSeededContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Transaction.self, Category.self, Ledger.self,
+        let container = try ModelContainer(for: Transaction.self, JianJi.Category.self, Ledger.self,
                                            configurations: config)
         SeedData.seedIfNeeded(container.mainContext)
         SeedData.seedLedgerIfNeeded(container.mainContext)
@@ -17,9 +17,9 @@ enum TestSupport {
     }
 
     @MainActor
-    static func categories(_ container: ModelContainer) throws -> [Category] {
+    static func categories(_ container: ModelContainer) throws -> [JianJi.Category] {
         try container.mainContext.fetch(
-            FetchDescriptor<Category>(sortBy: [SortDescriptor(\.sortOrder)])
+            FetchDescriptor<JianJi.Category>(sortBy: [SortDescriptor(\.sortOrder)])
         )
     }
 
