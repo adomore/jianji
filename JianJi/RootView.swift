@@ -15,6 +15,7 @@ struct RootView: View {
     @State private var tab: Tab = .list
     @State private var showAdd = false
     @State private var startInVoice = false
+    @State private var showSplash = true
 
     private var t: Theme { Theme(scheme) }
     private var locked: Bool { lockEnabled && !appLock.isUnlocked }
@@ -53,6 +54,14 @@ struct RootView: View {
         // Privacy lock (设置 → 账单隐私保护): cover everything until authenticated.
         .overlay {
             if locked { LockView(lock: appLock).environment(\.theme, t) }
+        }
+        // Branded splash (¥ 货币纹路) — rendered in-app because a launch storyboard
+        // can't reliably show an asset-catalog image. Sits above everything, fades once.
+        .overlay {
+            if showSplash {
+                SplashView(onFinish: { showSplash = false })
+                    .transition(.opacity)
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
