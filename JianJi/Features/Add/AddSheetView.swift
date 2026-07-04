@@ -85,11 +85,35 @@ struct AddSheetView: View {
                 Button("取消") { dismiss() }
                     .font(.system(size: 17)).foregroundStyle(t.accent)
                 Spacer()
+                ledgerMenu          // 顶部快捷切换当前账本，新账单直接记入该账本
             }
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 6)
+    }
+
+    private var ledgerMenu: some View {
+        Menu {
+            ForEach(ledgers) { l in
+                Button {
+                    activeLedgerID = l.id.uuidString
+                    Haptics.tap()
+                } label: {
+                    Label(l.name, systemImage: l.id == activeLedger?.id ? "checkmark" : l.symbolName)
+                }
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: activeLedger?.symbolName ?? "books.vertical.fill")
+                    .font(.system(size: 12))
+                Text(activeLedger?.name ?? "账本")
+                    .font(.system(size: 14, weight: .medium)).lineLimit(1)
+                Image(systemName: "chevron.down").font(.system(size: 9, weight: .semibold))
+            }
+            .foregroundStyle(t.accent)
+            .frame(maxWidth: 130, alignment: .trailing)
+        }
     }
 
     private var categoryGrid: some View {

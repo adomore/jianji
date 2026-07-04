@@ -25,8 +25,13 @@ struct LedgerView: View {
                 }
                 Section("全部账本") {
                     ForEach(ledgers) { l in
-                        Button { switchTo(l) } label: { row(l) }
-                            .buttonStyle(.plain)
+                        NavigationLink { LedgerReportView(ledger: l).environment(\.theme, t) } label: { row(l) }
+                            .swipeActions(edge: .leading) {
+                                if l.id != active?.id {
+                                    Button { switchTo(l) } label: { Label("设为当前", systemImage: "checkmark.circle") }
+                                        .tint(t.accent)
+                                }
+                            }
                             .swipeActions(edge: .trailing) {
                                 if !l.isDefault {
                                     Button(role: .destructive) { pendingDelete = l } label: {
@@ -37,10 +42,12 @@ struct LedgerView: View {
                                     .tint(t.accent)
                             }
                     }
+                    .onMove(perform: move)
                 }
             }
             .navigationTitle("账本")
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) { EditButton() }   // 拖动排序
                 ToolbarItem(placement: .topBarTrailing) {
                     Button { showAdd = true } label: { Image(systemName: "plus") }
                         .accessibilityLabel("新建账本")
@@ -121,6 +128,13 @@ struct LedgerView: View {
     private func switchTo(_ l: Ledger) {
         activeID = l.id.uuidString
         Haptics.tap()
+    }
+
+    private func move(from source: IndexSet, to dest: Int) {
+        var arr = ledgers
+        arr.move(fromOffsets: source, toOffset: dest)
+        for (i, l) in arr.enumerated() { l.sortOrder = i }
+        try? context.save()
     }
 
     private func delete(_ l: Ledger) {
