@@ -110,7 +110,7 @@ private struct TabBar: View {
                     .font(.system(size: 27, weight: .semibold))
                     .foregroundStyle(.white)
                     .frame(width: 60, height: 60)
-                    .background(t.accent, in: Circle())
+                    .background(t.accent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
                     .shadow(color: t.accent.opacity(0.4), radius: 10, x: 0, y: 6)
             }
             .buttonStyle(PressableStyle(scale: 0.94))

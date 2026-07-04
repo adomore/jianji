@@ -8,9 +8,11 @@
 	<key>UILaunchScreen</key>
 	<dict>
 		<key>UIColorName</key>
-		<string>LaunchBackground</string>
+		<string>LaunchWhite</string>
+		<key>UIImageName</key>
+		<string>LaunchImage</string>
 		<key>UIImageRespectsSafeAreaInsets</key>
-		<true/>
+		<false/>
 	</dict>
 	<key>NSFaceIDUsageDescription</key>
 	<string>「简记」使用 Face ID 保护你的账单隐私，仅本人可查看。</string>
