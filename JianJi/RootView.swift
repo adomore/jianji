@@ -91,7 +91,7 @@ private struct TabBar: View {
             }
             .buttonStyle(PressableStyle(scale: 0.94))
             .simultaneousGesture(LongPressGesture(minimumDuration: 0.4).onEnded { _ in onAddLongPress() })
-            .offset(y: -30)
+            .offset(y: -41)
             .accessibilityLabel("记一笔")
             .accessibilityHint("长按可直接进入语音记账")
         }
