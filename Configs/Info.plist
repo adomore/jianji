@@ -4,16 +4,10 @@
 <dict>
 	<!-- Partial Info.plist: GENERATE_INFOPLIST_FILE=YES merges the generated keys
 	     (CFBundle*, scene manifest, permission strings, etc.) on top of this file.
-	     We only add the branded launch screen the build settings can't express. -->
-	<key>UILaunchScreen</key>
-	<dict>
-		<key>UIColorName</key>
-		<string>LaunchWhite</string>
-		<key>UIImageName</key>
-		<string>LaunchImage</string>
-		<key>UIImageRespectsSafeAreaInsets</key>
-		<false/>
-	</dict>
+	     Launch screen uses a storyboard (reliable full-screen art) rather than the
+	     UILaunchScreen image dict, which doesn't render full-bleed images dependably. -->
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>「简记」使用 Face ID 保护你的账单隐私，仅本人可查看。</string>
 </dict>
