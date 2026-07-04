@@ -7,11 +7,15 @@ enum Tab: Int { case ledger, list, charts, settings }
 /// floating add button and the blurred bar — matching the prototype's bottom bar exactly.
 struct RootView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.scenePhase) private var scenePhase
+    @AppStorage("privacyLockEnabled") private var lockEnabled = false
+    @StateObject private var appLock = AppLock()
     @State private var tab: Tab = .list
     @State private var showAdd = false
     @State private var startInVoice = false
 
     private var t: Theme { Theme(scheme) }
+    private var locked: Bool { lockEnabled && !appLock.isUnlocked }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -41,6 +45,16 @@ struct RootView: View {
                 .presentationDetents([.large])
                 .presentationDragIndicator(.hidden)
                 .presentationCornerRadius(14)
+        }
+        // Privacy lock (设置 → 账单隐私保护): cover everything until authenticated.
+        .overlay {
+            if locked { LockView(lock: appLock).environment(\.theme, t) }
+        }
+        .onChange(of: scenePhase) { _, phase in
+            if phase == .background && lockEnabled { appLock.lock() }
+        }
+        .onChange(of: lockEnabled) { _, _ in
+            appLock.isUnlocked = true   // toggling in 设置 shouldn't lock you out immediately
         }
     }
 

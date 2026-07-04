@@ -6,10 +6,16 @@ struct MonthSummaryCard: View {
     let month: Date
     let expense: Decimal
     let income: Decimal
+    var budget: Decimal = 0            // 0 = 不限
     var onPrev: () -> Void
     var onNext: () -> Void
 
     private var balance: Decimal { income - expense }
+    private var overBudget: Bool { budget > 0 && expense > budget }
+    private var budgetRatio: Double {
+        guard budget > 0 else { return 0 }
+        return min(1, max(0, ((expense / budget) as NSDecimalNumber).doubleValue))
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -38,6 +44,8 @@ struct MonthSummaryCard: View {
                 stat("结余", Fmt.money(balance), negative: balance < 0)
             }
             .padding(.top, 12)
+
+            if budget > 0 { budgetBar.padding(.top, 14) }
         }
         .padding(.horizontal, 20)
         .padding(.top, 16)
@@ -72,6 +80,33 @@ struct MonthSummaryCard: View {
                 Text(value)
                     .font(.system(size: 16, weight: .semibold)).monospacedDigit()
                     .foregroundStyle(.white)
+            }
+        }
+    }
+
+    private var budgetBar: some View {
+        VStack(spacing: 6) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule().fill(.white.opacity(0.25)).frame(height: 6)
+                    Capsule().fill(overBudget ? Color(hex: "FF3B30") : .white)
+                        .frame(width: geo.size.width * budgetRatio, height: 6)
+                }
+            }
+            .frame(height: 6)
+            HStack {
+                Text("预算 " + Fmt.money(budget))
+                    .font(.system(size: 12)).foregroundStyle(.white.opacity(0.85))
+                Spacer()
+                if overBudget {
+                    Text("超 " + Fmt.money(expense - budget))
+                        .font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                        .padding(.horizontal, 8).padding(.vertical, 2)
+                        .background(Color(hex: "FF3B30"), in: Capsule())
+                } else {
+                    Text("剩 " + Fmt.money(budget - expense))
+                        .font(.system(size: 12)).foregroundStyle(.white.opacity(0.85))
+                }
             }
         }
     }

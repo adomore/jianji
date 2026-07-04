@@ -307,7 +307,7 @@ struct AddSheetView: View {
         speech.requestAndStart(
             onDenied: { micDenied = true },
             onFinished: { transcript in
-                guard !transcript.isEmpty else { return }
+                guard !transcript.isEmpty else { showToast("没听清，请再说一次"); return }
                 let d = EntryParser.parse(transcript, isExpense: isExpense,
                                           categories: categories, source: .voice)
                 draftQueue = [d]; draftTotal = 1

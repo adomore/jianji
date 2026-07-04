@@ -12,5 +12,7 @@
 		<key>UIImageRespectsSafeAreaInsets</key>
 		<true/>
 	</dict>
+	<key>NSFaceIDUsageDescription</key>
+	<string>「简记」使用 Face ID 保护你的账单隐私，仅本人可查看。</string>
 </dict>
 </plist>

@@ -8,22 +8,36 @@ enum EntryParser {
 
     /// Category keyword map (PRD §4.3). Order matters: first hit wins.
     static let keywordMap: [(category: String, keywords: [String])] = [
-        ("餐饮", ["吃", "饭", "早餐", "午饭", "晚饭", "外卖", "奶茶", "咖啡", "餐厅", "美食"]),
-        ("交通", ["打车", "地铁", "公交", "滴滴", "加油", "停车", "高铁", "火车", "机票"]),
-        ("购物", ["买", "淘宝", "京东", "拼多多", "超市", "商场"]),
-        ("娱乐", ["电影", "游戏", "KTV", "唱歌", "演唱会"]),
-        ("医疗", ["药", "医院", "挂号", "诊所", "体检"]),
-        ("日用", ["日用", "纸巾", "洗", "牙膏"]),
-        ("住房", ["房租", "水电", "物业", "房贷"]),
+        ("餐饮", ["吃", "饭", "餐", "早餐", "午餐", "午饭", "晚餐", "晚饭", "中餐", "外卖", "奶茶",
+                "咖啡", "餐厅", "美食", "食堂", "快餐", "夜宵", "宵夜", "零食", "下午茶", "火锅",
+                "烧烤", "喝", "水果", "菜"]),
+        ("交通", ["打车", "地铁", "公交", "滴滴", "加油", "停车", "高铁", "火车", "机票", "车票", "共享单车", "过路费"]),
+        ("购物", ["买", "淘宝", "京东", "拼多多", "超市", "商场", "网购", "衣服", "鞋"]),
+        ("娱乐", ["电影", "游戏", "KTV", "唱歌", "演唱会", "娱乐", "旅游", "门票"]),
+        ("医疗", ["药", "医院", "挂号", "诊所", "体检", "看病"]),
+        ("日用", ["日用", "纸巾", "洗", "牙膏", "洗衣", "家居"]),
+        ("住房", ["房租", "水电", "物业", "房贷", "电费", "水费", "燃气"]),
     ]
 
-    static func parse(_ text: String, isExpense: Bool, categories: [Category], source: EntrySource) -> EntryDraft {
+    /// Wording that flips 支出/收入 regardless of the segment's current value.
+    static let incomeHints = ["收入", "工资", "薪", "进账", "红包", "报销", "退款", "利息", "分红", "奖金", "转入", "收到", "赚"]
+    static let expenseHints = ["支出", "花了", "花", "付", "买", "消费", "支付", "转出", "交了", "充值", "缴"]
+
+    static func parse(_ text: String, isExpense defaultExpense: Bool, categories: [Category], source: EntrySource) -> EntryDraft {
+        let isExpense = detectIsExpense(text, default: defaultExpense)
         let amount = parseAmount(text)
         let categoryName = parseCategory(text, isExpense: isExpense, categories: categories)
         let date = parseDate(text)
         let note = parseNote(text, categoryName: categoryName)
         return EntryDraft(isExpense: isExpense, amount: amount, categoryName: categoryName,
                           date: date, note: note, rawText: text, source: source)
+    }
+
+    /// Infer 支出/收入 from the phrase; income wins if both appear, else fall back to the segment.
+    static func detectIsExpense(_ text: String, default def: Bool) -> Bool {
+        if incomeHints.contains(where: { text.contains($0) }) { return false }
+        if expenseHints.contains(where: { text.contains($0) }) { return true }
+        return def
     }
 
     // MARK: amount

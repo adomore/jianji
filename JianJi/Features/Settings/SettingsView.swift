@@ -4,6 +4,7 @@ import SwiftUI
 /// as "即将推出" placeholders so the information architecture is complete.
 struct SettingsView: View {
     @Environment(\.theme) private var t
+    @AppStorage("privacyLockEnabled") private var lockEnabled = false
 
     var body: some View {
         NavigationStack {
@@ -12,13 +13,25 @@ struct SettingsView: View {
                     NavigationLink { CategoryManagementView() } label: {
                         row("square.grid.2x2.fill", t.accent, "分类管理")
                     }
+                    NavigationLink { BudgetView() } label: {
+                        row("chart.pie.fill", Color(hex: "5856D6"), "月度预算")
+                    }
                 } header: { Text("记账") }
 
                 Section {
-                    placeholder("chart.pie.fill", Color(hex: "5856D6"), "月度预算")
-                    placeholder("square.and.arrow.up.fill", Color(hex: "34C759"), "导出 CSV")
+                    Toggle(isOn: $lockEnabled) {
+                        row("lock.fill", Color(hex: "FF3B30"), "账单隐私保护")
+                    }
+                } header: { Text("隐私") } footer: {
+                    Text("开启后，进入 App 需 Face ID / 密码验证才能查看完整账单。")
+                }
+
+                Section {
+                    NavigationLink { ExportView() } label: {
+                        row("square.and.arrow.up.fill", Color(hex: "34C759"), "导出账单")
+                    }
                     placeholder("icloud.fill", Color(hex: "007AFF"), "iCloud 同步")
-                } header: { Text("更多") } footer: { Text("以上功能将在后续版本中推出。") }
+                } header: { Text("更多") } footer: { Text("iCloud 同步将在后续版本中推出。") }
 
                 Section {
                     NavigationLink { AboutView() } label: { row("info.circle.fill", t.sec, "关于「简记」") }

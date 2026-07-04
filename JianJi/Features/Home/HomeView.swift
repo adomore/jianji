@@ -10,6 +10,7 @@ struct HomeView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var all: [Transaction]
     @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
     @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
+    @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
 
     /// First day of the currently displayed month.
     @State private var month: Date = Calendar.current.startOfMonth(for: .now)
@@ -27,6 +28,10 @@ struct HomeView: View {
 
     private var monthExpense: Decimal { monthTx.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }
     private var monthIncome: Decimal { monthTx.filter { !$0.isExpense }.reduce(0) { $0 + $1.amount } }
+    /// Budget only applies to the current month (past months don't show a cap).
+    private var displayBudget: Decimal {
+        cal.isDate(month, equalTo: .now, toGranularity: .month) ? Decimal(monthlyBudget) : 0
+    }
 
     /// Transactions grouped by day, days sorted newest-first.
     private var days: [DayGroup] {
@@ -42,6 +47,7 @@ struct HomeView: View {
                 VStack(spacing: 0) {
                     MonthSummaryCard(
                         month: month, expense: monthExpense, income: monthIncome,
+                        budget: displayBudget,
                         onPrev: { shift(-1) }, onNext: { shift(1) }
                     )
                     .padding(.horizontal, 16)

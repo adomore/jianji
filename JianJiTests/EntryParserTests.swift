@@ -87,4 +87,23 @@ final class EntryParserTests: XCTestCase {
         XCTAssertEqual(d.amount, 8000)
         XCTAssertEqual(d.categoryName, "工资")
     }
+
+    /// The exact phrase the user reported: "午餐支出25元" → 餐饮 / 支出 / 25.
+    @MainActor
+    func testFullParseLunchExpensePhrase() throws {
+        let cats = try TestSupport.categories(TestSupport.makeSeededContainer())
+        // default segment is 收入 here, but "支出" in the phrase must win → expense
+        let d = EntryParser.parse("午餐支出25元", isExpense: false, categories: cats, source: .voice)
+        XCTAssertEqual(d.amount, 25)
+        XCTAssertEqual(d.categoryName, "餐饮")
+        XCTAssertTrue(d.isExpense)
+    }
+
+    func testDetectIsExpense() {
+        XCTAssertTrue(EntryParser.detectIsExpense("午餐支出25", default: false))   // 支出 → expense
+        XCTAssertTrue(EntryParser.detectIsExpense("买菜30", default: false))       // 买 → expense
+        XCTAssertFalse(EntryParser.detectIsExpense("工资8000", default: true))     // 工资 → income
+        XCTAssertFalse(EntryParser.detectIsExpense("收到红包200", default: true))  // 收到/红包 → income
+        XCTAssertTrue(EntryParser.detectIsExpense("吃饭", default: true))          // no hint → fall back
+    }
 }
