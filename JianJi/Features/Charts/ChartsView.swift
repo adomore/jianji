@@ -10,6 +10,7 @@ struct ChartsView: View {
     @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
     @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
     @EnvironmentObject private var privacy: PrivacyGate
+    @EnvironmentObject private var ledgerLock: LedgerLock
 
     @State private var month: Date = Calendar.current.startOfMonth(for: .now)
     @State private var selectedCategory: String?
@@ -50,22 +51,29 @@ struct ChartsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    monthSwitcher
-                    totalsRow
-                    donutCard
-                    if !slices.isEmpty { rankingCard }
-                    dailyCard
-                }
-                .padding(.top, 4)
-                .padding(.bottom, 120)           // clear the floating tab bar
+            Group {
+                if ledgerLock.isOpen(activeLedger) { chartsScroll }
+                else if let l = activeLedger { LedgerUnlockView(ledger: l) }
             }
-            .background(t.groupBg.ignoresSafeArea())
-            .scrollIndicators(.hidden)
             .navigationTitle("图表")             // system large title → consistent with 明细 / 设置
             .navigationBarTitleDisplayMode(.large)
         }
+    }
+
+    private var chartsScroll: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                monthSwitcher
+                totalsRow
+                donutCard
+                if !slices.isEmpty { rankingCard }
+                dailyCard
+            }
+            .padding(.top, 4)
+            .padding(.bottom, 120)           // clear the floating tab bar
+        }
+        .background(t.groupBg.ignoresSafeArea())
+        .scrollIndicators(.hidden)
     }
 
     private var monthSwitcher: some View {

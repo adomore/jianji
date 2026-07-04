@@ -12,6 +12,7 @@ struct HomeView: View {
     @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
     @EnvironmentObject private var privacy: PrivacyGate
+    @EnvironmentObject private var ledgerLock: LedgerLock
 
     /// First day of the currently displayed month.
     @State private var month: Date = Calendar.current.startOfMonth(for: .now)
@@ -60,55 +61,67 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    MonthSummaryCard(
-                        month: month, expense: monthExpense, income: monthIncome,
-                        budget: displayBudget,
-                        onPrev: { shift(-1) }, onNext: { shift(1) }
-                    )
-                    .padding(.horizontal, 16)
-
-                    if monthTx.isEmpty {
-                        EmptyStateView(onAdd: onAdd)
-                            .padding(.top, 80)
-                    } else {
-                        ForEach(days) { group in
-                            DaySection(group: group, onTapRow: { editing = $0 }, onDelete: { pendingDelete = $0 })
-                        }
-                        .padding(.top, 6)
-                    }
+            Group {
+                if ledgerLock.isOpen(activeLedger) {
+                    homeScroll
+                } else if let l = activeLedger {
+                    LedgerUnlockView(ledger: l)   // active book is a locked private 账本
                 }
-                .padding(.top, 4)
-                .padding(.bottom, 120)           // clear the floating tab bar
-                .animation(.easeInOut(duration: 0.25), value: ledgerTx.count)  // new rows fade in (PRD §5.2.5)
             }
-            .background(t.groupBg.ignoresSafeArea())
-            .scrollIndicators(.hidden)
-            .navigationTitle("明细")             // system large title → consistent with 设置
+            .navigationTitle("明细")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) { privacyButton }
+                ToolbarItem(placement: .topBarTrailing) {
+                    if ledgerLock.isOpen(activeLedger) { privacyButton }
+                }
             }
-            // Swipe left-right to change month (kept simultaneous so vertical scroll still works).
-            .simultaneousGesture(
-                DragGesture(minimumDistance: 30)
-                    .onEnded { v in
-                        guard abs(v.translation.width) > abs(v.translation.height) * 1.5 else { return }
-                        if v.translation.width < -50 { shift(1) }
-                        else if v.translation.width > 50 { shift(-1) }
+        }
+    }
+
+    private var homeScroll: some View {
+        ScrollView {
+            VStack(spacing: 0) {
+                MonthSummaryCard(
+                    month: month, expense: monthExpense, income: monthIncome,
+                    budget: displayBudget,
+                    onPrev: { shift(-1) }, onNext: { shift(1) }
+                )
+                .padding(.horizontal, 16)
+
+                if monthTx.isEmpty {
+                    EmptyStateView(onAdd: onAdd)
+                        .padding(.top, 80)
+                } else {
+                    ForEach(days) { group in
+                        DaySection(group: group, onTapRow: { editing = $0 }, onDelete: { pendingDelete = $0 })
                     }
-            )
-            .sheet(item: $editing) { tx in
-                TransactionDetailView(transaction: tx)
-                    .environment(\.theme, t)
+                    .padding(.top, 6)
+                }
             }
-            .confirmationDialog("删除这笔账单？", isPresented: deleteBinding, titleVisibility: .visible) {
-                Button("删除", role: .destructive) { performDelete() }
-                Button("取消", role: .cancel) { pendingDelete = nil }
-            } message: {
-                Text("删除后无法恢复。")
-            }
+            .padding(.top, 4)
+            .padding(.bottom, 120)           // clear the floating tab bar
+            .animation(.easeInOut(duration: 0.25), value: ledgerTx.count)  // new rows fade in (PRD §5.2.5)
+        }
+        .background(t.groupBg.ignoresSafeArea())
+        .scrollIndicators(.hidden)
+        // Swipe left-right to change month (kept simultaneous so vertical scroll still works).
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded { v in
+                    guard abs(v.translation.width) > abs(v.translation.height) * 1.5 else { return }
+                    if v.translation.width < -50 { shift(1) }
+                    else if v.translation.width > 50 { shift(-1) }
+                }
+        )
+        .sheet(item: $editing) { tx in
+            TransactionDetailView(transaction: tx)
+                .environment(\.theme, t)
+        }
+        .confirmationDialog("删除这笔账单？", isPresented: deleteBinding, titleVisibility: .visible) {
+            Button("删除", role: .destructive) { performDelete() }
+            Button("取消", role: .cancel) { pendingDelete = nil }
+        } message: {
+            Text("删除后无法恢复。")
         }
     }
 

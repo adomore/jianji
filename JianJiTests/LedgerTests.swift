@@ -86,4 +86,18 @@ final class LedgerTests: XCTestCase {
         XCTAssertEqual(tx.ledger?.id, def.id)                                   // moved to default
         XCTAssertEqual(try TestSupport.ledgers(c).count, 1)                     // travel removed
     }
+
+    func testPrivateLedgerPassword() {
+        XCTAssertEqual(Ledger.hash("1234"), Ledger.hash("1234"))     // deterministic
+        XCTAssertNotEqual(Ledger.hash("1234"), Ledger.hash("1235"))  // different input → different hash
+
+        let l = Ledger(name: "私密", sortOrder: 1)
+        l.isPrivate = true
+        l.passwordHash = Ledger.hash("secret")
+        XCTAssertTrue(l.matches(password: "secret"))
+        XCTAssertFalse(l.matches(password: "wrong"))
+
+        let plain = Ledger(name: "公开", sortOrder: 2)
+        XCTAssertFalse(plain.matches(password: "anything"))          // no hash set → never matches
+    }
 }

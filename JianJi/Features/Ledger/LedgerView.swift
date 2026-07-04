@@ -10,6 +10,7 @@ struct LedgerView: View {
     @Query private var all: [Transaction]
     @AppStorage(ActiveLedger.storageKey) private var activeID = ""
     @EnvironmentObject private var privacy: PrivacyGate
+    @EnvironmentObject private var ledgerLock: LedgerLock
 
     @State private var showAdd = false
     @State private var editing: Ledger?
@@ -28,7 +29,7 @@ struct LedgerView: View {
                     ForEach(ledgers) { l in
                         NavigationLink { LedgerReportView(ledger: l).environment(\.theme, t) } label: { row(l) }
                             .swipeActions(edge: .leading) {
-                                if l.id != active?.id {
+                                if l.id != active?.id && ledgerLock.isOpen(l) {   // locked private → unlock via report
                                     Button { switchTo(l) } label: { Label("设为当前", systemImage: "checkmark.circle") }
                                         .tint(t.accent)
                                 }
@@ -68,19 +69,27 @@ struct LedgerView: View {
     // MARK: rows
 
     private func overview(_ l: Ledger) -> some View {
+        let open = ledgerLock.isOpen(l)
         let s = stats(l)
         return VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 12) {
                 CategoryIcon(symbol: l.symbolName, color: l.color, size: 40)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(l.name).font(.system(size: 17, weight: .semibold)).foregroundStyle(t.text)
-                    Text("\(s.count) 笔记录").font(.system(size: 13)).foregroundStyle(t.sec)
+                    Text(open ? "\(s.count) 笔记录" : "已加密").font(.system(size: 13)).foregroundStyle(t.sec)
                 }
             }
-            HStack(spacing: 0) {
-                col("结余", Fmt.money(s.income - s.expense), (s.income - s.expense) >= 0 ? t.text : t.red)
-                col("收入", Fmt.money(s.income), t.green)
-                col("支出", Fmt.money(s.expense), t.text)
+            if open {
+                HStack(spacing: 0) {
+                    col("结余", Fmt.money(s.income - s.expense), (s.income - s.expense) >= 0 ? t.text : t.red)
+                    col("收入", Fmt.money(s.income), t.green)
+                    col("支出", Fmt.money(s.expense), t.text)
+                }
+            } else {
+                HStack(spacing: 6) {
+                    Image(systemName: "lock.fill").font(.system(size: 13)).foregroundStyle(t.sec)
+                    Text("需 Face ID + 密码解锁").font(.system(size: 13)).foregroundStyle(t.sec)
+                }
             }
         }
         .padding(.vertical, 6)
@@ -96,12 +105,19 @@ struct LedgerView: View {
     }
 
     private func row(_ l: Ledger) -> some View {
+        let open = ledgerLock.isOpen(l)
         let s = stats(l)
         return HStack(spacing: 12) {
             CategoryIcon(symbol: l.symbolName, color: l.color, size: 34)
             VStack(alignment: .leading, spacing: 2) {
-                Text(l.name).font(.system(size: 16)).foregroundStyle(t.text)
-                Text("\(s.count) 笔 · 结余 \(Fmt.money(s.income - s.expense))")
+                HStack(spacing: 5) {
+                    Text(l.name).font(.system(size: 16)).foregroundStyle(t.text)
+                    if l.isPrivate {
+                        Image(systemName: open ? "lock.open.fill" : "lock.fill")
+                            .font(.system(size: 10)).foregroundStyle(t.ter)
+                    }
+                }
+                Text(open ? "\(s.count) 笔 · 结余 \(Fmt.money(s.income - s.expense))" : "已加密 · 点按解锁")
                     .font(.system(size: 12)).foregroundStyle(t.sec)
             }
             Spacer()

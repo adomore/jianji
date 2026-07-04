@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 import SwiftUI
+import CryptoKit
 
 /// 账本 — a named book that transactions belong to. Local-only multiple books
 /// (single user; shared/family books stay out of scope per PRD §1.4).
@@ -15,6 +16,9 @@ final class Ledger {
     var isDefault: Bool = false
     var sortOrder: Int = 0
     var createdAt: Date = Date()
+    /// Private book: needs Face ID + password to open. `passwordHash` is a salted SHA-256.
+    var isPrivate: Bool = false
+    var passwordHash: String?
 
     @Relationship(deleteRule: .nullify, inverse: \Transaction.ledger)
     var transactions: [Transaction]? = []
@@ -33,4 +37,17 @@ final class Ledger {
     }
 
     var color: Color { Color(hex: colorHex) }
+
+    /// Salted SHA-256 of a password. (Local-only "hide from snooping" factor, paired with
+    /// Face ID — not a substitute for Keychain-grade secrets.)
+    static func hash(_ password: String) -> String {
+        let salted = "jianji.ledger.v1|" + password
+        let digest = SHA256.hash(data: Data(salted.utf8))
+        return digest.map { String(format: "%02x", $0) }.joined()
+    }
+
+    func matches(password: String) -> Bool {
+        guard let passwordHash else { return false }
+        return Ledger.hash(password) == passwordHash
+    }
 }

@@ -11,6 +11,7 @@ struct RootView: View {
     @AppStorage("privacyLockEnabled") private var lockEnabled = false
     @StateObject private var appLock = AppLock()
     @StateObject private var privacy = PrivacyGate()
+    @StateObject private var ledgerLock = LedgerLock()
     @State private var tab: Tab = .list
     @State private var showAdd = false
     @State private var startInVoice = false
@@ -40,6 +41,7 @@ struct RootView: View {
         .background(t.groupBg.ignoresSafeArea())
         .environment(\.theme, t)
         .environmentObject(privacy)
+        .environmentObject(ledgerLock)
         .ignoresSafeArea(.keyboard)
         .sheet(isPresented: $showAdd) {
             AddSheetView(startInVoice: startInVoice)
@@ -55,7 +57,8 @@ struct RootView: View {
         .onChange(of: scenePhase) { _, phase in
             if phase == .background {
                 if lockEnabled { appLock.lock() }
-                privacy.hide()     // re-hide private bills when leaving the app
+                privacy.hide()          // re-hide private bills when leaving the app
+                ledgerLock.relock()     // re-lock private 账本
             }
         }
         .onChange(of: lockEnabled) { _, _ in

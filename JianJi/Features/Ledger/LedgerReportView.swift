@@ -9,6 +9,7 @@ struct LedgerReportView: View {
     @Query private var all: [Transaction]
     @AppStorage(ActiveLedger.storageKey) private var activeID = ""
     @EnvironmentObject private var privacy: PrivacyGate
+    @EnvironmentObject private var ledgerLock: LedgerLock
 
     let ledger: Ledger
 
@@ -45,6 +46,32 @@ struct LedgerReportView: View {
     }
 
     var body: some View {
+        Group {
+            if ledgerLock.isOpen(ledger) { report } else { LedgerUnlockView(ledger: ledger) }
+        }
+        .navigationTitle(ledger.name)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                if ledgerLock.isOpen(ledger) {
+                    if activeID == ledger.id.uuidString {
+                        Text("当前账本").font(.system(size: 13)).foregroundStyle(t.sec)
+                    } else {
+                        Button("设为当前") { activeID = ledger.id.uuidString; Haptics.tap() }
+                    }
+                }
+            }
+        }
+        .sheet(item: $editing) { tx in TransactionDetailView(transaction: tx).environment(\.theme, t) }
+        .confirmationDialog("删除这笔账单？", isPresented: deleteBinding, titleVisibility: .visible) {
+            Button("删除", role: .destructive) { performDelete() }
+            Button("取消", role: .cancel) { pendingDelete = nil }
+        } message: {
+            Text("删除后无法恢复。")
+        }
+    }
+
+    private var report: some View {
         ScrollView {
             VStack(spacing: 0) {
                 MonthSummaryCard(month: month, expense: expense, income: income,
@@ -68,24 +95,6 @@ struct LedgerReportView: View {
         .background(t.groupBg.ignoresSafeArea())
         .environment(\.theme, t)
         .scrollIndicators(.hidden)
-        .navigationTitle(ledger.name)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                if activeID == ledger.id.uuidString {
-                    Text("当前账本").font(.system(size: 13)).foregroundStyle(t.sec)
-                } else {
-                    Button("设为当前") { activeID = ledger.id.uuidString; Haptics.tap() }
-                }
-            }
-        }
-        .sheet(item: $editing) { tx in TransactionDetailView(transaction: tx).environment(\.theme, t) }
-        .confirmationDialog("删除这笔账单？", isPresented: deleteBinding, titleVisibility: .visible) {
-            Button("删除", role: .destructive) { performDelete() }
-            Button("取消", role: .cancel) { pendingDelete = nil }
-        } message: {
-            Text("删除后无法恢复。")
-        }
     }
 
     private var detailList: some View {
