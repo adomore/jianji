@@ -98,13 +98,10 @@ struct AddSheetView: View {
                     Haptics.tap()
                 } label: {
                     VStack(spacing: 6) {
-                        Text(c.emoji)
-                            .font(.system(size: 24))
-                            .frame(width: 52, height: 52)
-                            .background(selected ? t.accent : c.tint, in: Circle())
+                        CategoryIcon(symbol: c.symbolName, color: c.color, size: 52)
                             .overlay(
-                                Circle().stroke(t.accent.opacity(0.25), lineWidth: selected ? 3 : 0)
-                                    .padding(-1.5)
+                                Circle().stroke(t.accent, lineWidth: selected ? 3 : 0)
+                                    .padding(-3)
                             )
                         Text(c.name)
                             .font(.system(size: 12, weight: selected ? .semibold : .regular))

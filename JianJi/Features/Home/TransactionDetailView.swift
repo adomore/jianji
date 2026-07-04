@@ -50,7 +50,7 @@ struct TransactionDetailView: View {
                         get: { transaction.category?.id },
                         set: { id in transaction.category = cats.first { $0.id == id } })) {
                         ForEach(cats) { c in
-                            Text("\(c.emoji)  \(c.name)").tag(Optional(c.id))
+                            Label(c.name, systemImage: c.symbolName).tag(Optional(c.id))
                         }
                     }
                     .pickerStyle(.navigationLink)

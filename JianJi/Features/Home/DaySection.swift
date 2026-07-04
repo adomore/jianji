@@ -66,10 +66,8 @@ struct TransactionRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(tx.category?.emoji ?? "📦")
-                .font(.system(size: 19))
-                .frame(width: 38, height: 38)
-                .background(tx.category?.tint ?? t.fill, in: Circle())
+            CategoryIcon(symbol: tx.category?.symbolName ?? "shippingbox.fill",
+                         color: tx.category?.color ?? Color(hex: "787880"), size: 38)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(tx.category?.name ?? "其他")
@@ -84,6 +82,10 @@ struct TransactionRow: View {
             Text(Fmt.signed(tx.amount, isExpense: tx.isExpense))
                 .font(.system(size: 16, weight: .semibold)).monospacedDigit()
                 .foregroundStyle(tx.isExpense ? t.text : t.green)
+
+            Image(systemName: "chevron.right")           // tap-to-detail affordance
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundStyle(t.ter)
         }
         .padding(.horizontal, 14)
         .padding(.vertical, 11)

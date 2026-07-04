@@ -152,11 +152,13 @@ struct ConfirmCard: View {
             }
             Divider()
             ForEach(sideCats) { c in
-                Button { categoryName = c.name } label: { Text("\(c.emoji)  \(c.name)") }
+                Button { categoryName = c.name } label: { Label(c.name, systemImage: c.symbolName) }
             }
         } label: {
-            HStack(spacing: 6) {
-                Text(currentCategory?.emoji ?? "📦")
+            HStack(spacing: 8) {
+                if let c = currentCategory {
+                    CategoryIcon(symbol: c.symbolName, color: c.color, size: 24)
+                }
                 Text(currentCategory?.name ?? "其他").font(.system(size: 16)).foregroundStyle(t.accent)
                 Image(systemName: "chevron.up.chevron.down").font(.system(size: 11)).foregroundStyle(t.sec)
             }

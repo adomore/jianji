@@ -32,8 +32,7 @@ struct CategoryManagementView: View {
         Section {
             ForEach(items) { c in
                 HStack(spacing: 12) {
-                    Text(c.emoji).font(.system(size: 20))
-                        .frame(width: 34, height: 34).background(c.tint, in: Circle())
+                    CategoryIcon(symbol: c.symbolName, color: c.color, size: 34)
                     Text(c.name)
                     Spacer()
                     if c.isBuiltin {

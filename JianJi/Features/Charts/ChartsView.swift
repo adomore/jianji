@@ -26,6 +26,7 @@ struct ChartsView: View {
                 name: name,
                 amount: txs.reduce(0) { $0 + $1.amount },
                 emoji: txs.first?.category?.emoji ?? "📦",
+                symbolName: txs.first?.category?.symbolName ?? "shippingbox.fill",
                 color: txs.first?.category?.color ?? Color(hex: "787880")
             )
         }
@@ -77,7 +78,7 @@ struct ChartsView: View {
         HStack(spacing: 10) {
             totalCell("支出", expense, t.text)
             totalCell("收入", income, t.green)
-            totalCell("结余", income - expense, income - expense >= 0 ? t.green : t.text)
+            totalCell("结余", income - expense, income - expense >= 0 ? t.green : t.red)
         }
         .padding(.horizontal, 16)
     }
@@ -120,7 +121,7 @@ struct ChartsView: View {
                 .chartBackground { _ in
                     VStack(spacing: 2) {
                         if let sel = selectedCategory, let s = slices.first(where: { $0.name == sel }) {
-                            Text(s.emoji).font(.system(size: 22))
+                            CategoryIcon(symbol: s.symbolName, color: s.color, size: 34)
                             Text(s.name).font(.system(size: 13)).foregroundStyle(t.sec)
                             Text(Fmt.money(s.amount)).font(.system(size: 16, weight: .semibold))
                                 .monospacedDigit().foregroundStyle(t.text)
@@ -146,9 +147,7 @@ struct ChartsView: View {
                     withAnimation { selectedCategory = selectedCategory == slice.name ? nil : slice.name }
                 } label: {
                     HStack(spacing: 12) {
-                        Text(slice.emoji).font(.system(size: 18))
-                            .frame(width: 36, height: 36)
-                            .background(slice.color.opacity(0.16), in: Circle())
+                        CategoryIcon(symbol: slice.symbolName, color: slice.color, size: 36)
                         VStack(alignment: .leading, spacing: 3) {
                             HStack {
                                 Text(slice.name).font(.system(size: 15, weight: .medium)).foregroundStyle(t.text)
@@ -249,6 +248,7 @@ struct CategorySlice: Identifiable {
     let name: String
     let amount: Decimal
     let emoji: String
+    let symbolName: String
     let color: Color
     var id: String { name }
     var amountDouble: Double { Double(truncating: amount as NSDecimalNumber) }
