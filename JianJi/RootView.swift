@@ -1,6 +1,6 @@
 import SwiftUI
 
-enum Tab: Int { case list, charts, settings }
+enum Tab: Int { case ledger, list, charts, settings }
 
 /// App shell: the three tabs plus the custom floating "＋" tab bar (PRD §5.1).
 /// The bar is drawn by hand (rather than a system `TabView`) because of the centered
@@ -17,6 +17,7 @@ struct RootView: View {
         ZStack(alignment: .bottom) {
             Group {
                 switch tab {
+                case .ledger:   LedgerView()
                 case .list:     HomeView(onAdd: { openAdd() })
                 case .charts:   ChartsView()
                 case .settings: SettingsView()
@@ -72,9 +73,10 @@ private struct TabBar: View {
                 .ignoresSafeArea(edges: .bottom)
 
             HStack(spacing: 0) {
+                item(.ledger, symbol: "books.vertical.fill", label: "账本")
                 item(.list, symbol: "list.bullet", label: "明细")
+                Spacer().frame(width: 72)     // center slot for the + button (明细 ↔ 图表)
                 item(.charts, symbol: "chart.bar.fill", label: "图表")
-                Spacer().frame(width: 84)     // reserve center slot for the + button
                 item(.settings, symbol: "gearshape.fill", label: "设置")
             }
             .frame(height: 82)

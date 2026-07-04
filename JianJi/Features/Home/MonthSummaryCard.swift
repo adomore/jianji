@@ -34,9 +34,8 @@ struct MonthSummaryCard: View {
                 .minimumScaleFactor(0.6)
 
             HStack(spacing: 32) {
-                stat("本月收入", Fmt.money(income), .white)
-                // 结余 negative → dark red (readable on the orange card); positive stays white.
-                stat("结余", Fmt.money(balance), balance < 0 ? Color(hex: "7A0F12") : .white)
+                stat("本月收入", Fmt.money(income), negative: false)
+                stat("结余", Fmt.money(balance), negative: balance < 0)
             }
             .padding(.top, 12)
         }
@@ -59,11 +58,21 @@ struct MonthSummaryCard: View {
         .accessibilityLabel(label)
     }
 
-    private func stat(_ label: String, _ value: String, _ valueColor: Color) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+    private func stat(_ label: String, _ value: String, negative: Bool) -> some View {
+        VStack(alignment: .leading, spacing: 3) {
             Text(label).font(.system(size: 12)).foregroundStyle(.white.opacity(0.75))
-            Text(value).font(.system(size: 16, weight: .semibold)).monospacedDigit()
-                .foregroundStyle(valueColor)
+            if negative {
+                // 白字 + 红胶囊：负结余在橙底上最醒目。
+                Text(value)
+                    .font(.system(size: 15, weight: .semibold)).monospacedDigit()
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 8).padding(.vertical, 2)
+                    .background(Color(hex: "FF3B30"), in: Capsule())
+            } else {
+                Text(value)
+                    .font(.system(size: 16, weight: .semibold)).monospacedDigit()
+                    .foregroundStyle(.white)
+            }
         }
     }
 }
