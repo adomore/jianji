@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// The orange monthly summary card at the top of the home screen. PRD §4.2.
+/// Three equal columns (支出 / 收入 / 结余) under a centered month switcher — 随手记 style.
 struct MonthSummaryCard: View {
     @Environment(\.theme) private var t
     let month: Date
@@ -10,7 +11,7 @@ struct MonthSummaryCard: View {
     var onNext: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
+        VStack(spacing: 0) {
             HStack(spacing: 14) {
                 chevron("chevron.left", "上个月", action: onPrev)
                 Text(Fmt.yearMonth(month))
@@ -18,29 +19,21 @@ struct MonthSummaryCard: View {
                     .foregroundStyle(.white)
                 chevron("chevron.right", "下个月", action: onNext)
             }
+            .frame(maxWidth: .infinity)
 
-            Text("本月支出")
-                .font(.system(size: 13))
-                .foregroundStyle(.white.opacity(0.85))
-                .padding(.top, 14)
-
-            Text(Fmt.money(expense))
-                .font(.system(size: 36, weight: .bold))
-                .monospacedDigit()
-                .foregroundStyle(.white)
-                .lineLimit(1)
-                .minimumScaleFactor(0.6)
-
-            HStack(spacing: 32) {
-                stat("本月收入", Fmt.money(income))
-                stat("结余", Fmt.money(income - expense))
+            HStack(spacing: 0) {
+                column("支出", Fmt.money(expense))
+                divider
+                column("收入", Fmt.money(income))
+                divider
+                column("结余", Fmt.money(income - expense))
             }
-            .padding(.top, 12)
+            .padding(.top, 18)
         }
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 16)
         .padding(.top, 16)
         .padding(.bottom, 18)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity)
         .background(t.accent, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
     }
 
@@ -56,10 +49,24 @@ struct MonthSummaryCard: View {
         .accessibilityLabel(label)
     }
 
-    private func stat(_ label: String, _ value: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(label).font(.system(size: 12)).foregroundStyle(.white.opacity(0.75))
-            Text(value).font(.system(size: 16, weight: .semibold)).monospacedDigit().foregroundStyle(.white)
+    /// One of the three equal-width stat columns: big number on top, label below.
+    private func column(_ label: String, _ value: String) -> some View {
+        VStack(spacing: 4) {
+            Text(value)
+                .font(.system(size: 18, weight: .bold))
+                .monospacedDigit()
+                .foregroundStyle(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
+            Text(label)
+                .font(.system(size: 12))
+                .foregroundStyle(.white.opacity(0.8))
         }
+        .frame(maxWidth: .infinity)
+        .padding(.horizontal, 4)
+    }
+
+    private var divider: some View {
+        Rectangle().fill(.white.opacity(0.22)).frame(width: 0.5, height: 32)
     }
 }
