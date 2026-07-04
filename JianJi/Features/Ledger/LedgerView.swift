@@ -1,91 +1,138 @@
 import SwiftUI
 import SwiftData
 
-/// 账本 tab — overview of the single "默认账本". Multi-ledger is out of first-version
-/// scope (PRD §1.4), surfaced here as a "即将推出" affordance so the tab is honest.
+/// 账本 tab — the active book's overview + the full book list (tap to switch,
+/// swipe to edit/delete, + to create). Deleting a book moves its bills to 默认账本.
 struct LedgerView: View {
     @Environment(\.colorScheme) private var scheme
+    @Environment(\.modelContext) private var context
+    @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
     @Query private var all: [Transaction]
-    private var t: Theme { Theme(scheme) }
+    @AppStorage(ActiveLedger.storageKey) private var activeID = ""
 
-    private var income: Decimal { all.filter { !$0.isExpense }.reduce(0) { $0 + $1.amount } }
-    private var expense: Decimal { all.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }
-    private var balance: Decimal { income - expense }
+    @State private var showAdd = false
+    @State private var editing: Ledger?
+    @State private var pendingDelete: Ledger?
+
+    private var t: Theme { Theme(scheme) }
+    private var active: Ledger? { ActiveLedger.resolve(ledgers, activeID: activeID) }
 
     var body: some View {
         NavigationStack {
-            ScrollView {
-                VStack(spacing: 16) {
-                    defaultBookCard
-                    comingSoon
+            List {
+                if let a = active {
+                    Section("当前账本") { overview(a) }
                 }
-                .padding(.top, 4)
-                .padding(.horizontal, 16)
-                .padding(.bottom, 120)
+                Section("全部账本") {
+                    ForEach(ledgers) { l in
+                        Button { switchTo(l) } label: { row(l) }
+                            .buttonStyle(.plain)
+                            .swipeActions(edge: .trailing) {
+                                if !l.isDefault {
+                                    Button(role: .destructive) { pendingDelete = l } label: {
+                                        Label("删除", systemImage: "trash")
+                                    }
+                                }
+                                Button { editing = l } label: { Label("编辑", systemImage: "pencil") }
+                                    .tint(t.accent)
+                            }
+                    }
+                }
             }
-            .background(t.groupBg.ignoresSafeArea())
-            .scrollIndicators(.hidden)
             .navigationTitle("账本")
-            .navigationBarTitleDisplayMode(.large)
-        }
-    }
-
-    private var defaultBookCard: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(spacing: 12) {
-                Image(systemName: "books.vertical.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 44, height: 44)
-                    .background(t.accent, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("默认账本").font(.system(size: 17, weight: .semibold)).foregroundStyle(t.text)
-                    Text("\(all.count) 笔记录").font(.system(size: 13)).foregroundStyle(t.sec)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button { showAdd = true } label: { Image(systemName: "plus") }
+                        .accessibilityLabel("新建账本")
                 }
-                Spacer()
             }
-
-            VStack(alignment: .leading, spacing: 3) {
-                Text("结余").font(.system(size: 13)).foregroundStyle(t.sec)
-                Text(Fmt.money(balance))
-                    .font(.system(size: 30, weight: .bold)).monospacedDigit()
-                    .foregroundStyle(balance >= 0 ? t.text : t.red)
-                    .lineLimit(1).minimumScaleFactor(0.6)
-            }
-
-            HStack(spacing: 0) {
-                totalCol("总收入", Fmt.money(income), t.green)
-                Rectangle().fill(t.sep).frame(width: 0.5, height: 30)
-                totalCol("总支出", Fmt.money(expense), t.text)
+            .safeAreaPadding(.bottom, 90)
+            .sheet(isPresented: $showAdd) { LedgerEditView(ledger: nil).environment(\.theme, t) }
+            .sheet(item: $editing) { l in LedgerEditView(ledger: l).environment(\.theme, t) }
+            .confirmationDialog("删除该账本？", isPresented: deleteBinding, titleVisibility: .visible) {
+                Button("删除", role: .destructive) { if let l = pendingDelete { delete(l) } }
+                Button("取消", role: .cancel) { pendingDelete = nil }
+            } message: {
+                Text("账本删除后，其账单会移入「默认账本」，不会被删除。")
             }
         }
-        .padding(18)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(t.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    private func totalCol(_ label: String, _ value: String, _ color: Color) -> some View {
-        VStack(spacing: 4) {
-            Text(value).font(.system(size: 17, weight: .semibold)).monospacedDigit()
+    // MARK: rows
+
+    private func overview(_ l: Ledger) -> some View {
+        let s = stats(l)
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 12) {
+                CategoryIcon(symbol: l.symbolName, color: l.color, size: 40)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(l.name).font(.system(size: 17, weight: .semibold)).foregroundStyle(t.text)
+                    Text("\(s.count) 笔记录").font(.system(size: 13)).foregroundStyle(t.sec)
+                }
+            }
+            HStack(spacing: 0) {
+                col("结余", Fmt.money(s.income - s.expense), (s.income - s.expense) >= 0 ? t.text : t.red)
+                col("收入", Fmt.money(s.income), t.green)
+                col("支出", Fmt.money(s.expense), t.text)
+            }
+        }
+        .padding(.vertical, 6)
+    }
+
+    private func col(_ label: String, _ value: String, _ color: Color) -> some View {
+        VStack(spacing: 3) {
+            Text(value).font(.system(size: 16, weight: .semibold)).monospacedDigit()
                 .foregroundStyle(color).lineLimit(1).minimumScaleFactor(0.6)
             Text(label).font(.system(size: 12)).foregroundStyle(t.sec)
         }
         .frame(maxWidth: .infinity)
     }
 
-    private var comingSoon: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "plus.rectangle.on.folder")
-                .font(.system(size: 18)).foregroundStyle(t.sec).frame(width: 30)
+    private func row(_ l: Ledger) -> some View {
+        let s = stats(l)
+        return HStack(spacing: 12) {
+            CategoryIcon(symbol: l.symbolName, color: l.color, size: 34)
             VStack(alignment: .leading, spacing: 2) {
-                Text("多账本").font(.system(size: 16)).foregroundStyle(t.text)
-                Text("分账本记账即将推出").font(.system(size: 12)).foregroundStyle(t.sec)
+                Text(l.name).font(.system(size: 16)).foregroundStyle(t.text)
+                Text("\(s.count) 笔 · 结余 \(Fmt.money(s.income - s.expense))")
+                    .font(.system(size: 12)).foregroundStyle(t.sec)
             }
             Spacer()
-            Text("即将推出").font(.system(size: 13)).foregroundStyle(t.ter)
+            if l.id == active?.id {
+                Image(systemName: "checkmark.circle.fill").foregroundStyle(t.accent)
+            }
         }
-        .padding(16)
-        .frame(maxWidth: .infinity)
-        .background(t.card, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .contentShape(Rectangle())
+    }
+
+    private var deleteBinding: Binding<Bool> {
+        Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } })
+    }
+
+    // MARK: actions
+
+    private func stats(_ l: Ledger) -> (count: Int, income: Decimal, expense: Decimal) {
+        let tx = all.filter { $0.ledger?.id == l.id }
+        let income = tx.filter { !$0.isExpense }.reduce(Decimal(0)) { $0 + $1.amount }
+        let expense = tx.filter { $0.isExpense }.reduce(Decimal(0)) { $0 + $1.amount }
+        return (tx.count, income, expense)
+    }
+
+    private func switchTo(_ l: Ledger) {
+        activeID = l.id.uuidString
+        Haptics.tap()
+    }
+
+    private func delete(_ l: Ledger) {
+        guard !l.isDefault else { return }
+        let fallback = ledgers.first { $0.isDefault } ?? ledgers.first { $0.id != l.id }
+        guard let def = fallback else { return }
+        // Move this book's bills to the default book (never delete bills), then remove the book.
+        for tx in all where tx.ledger?.id == l.id { tx.ledger = def }
+        if activeID == l.id.uuidString { activeID = def.id.uuidString }
+        context.delete(l)
+        try? context.save()
+        pendingDelete = nil
+        Haptics.tap()
     }
 }

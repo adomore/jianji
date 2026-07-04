@@ -7,14 +7,18 @@ import Charts
 struct ChartsView: View {
     @Environment(\.theme) private var t
     @Query(sort: \Transaction.date, order: .reverse) private var all: [Transaction]
+    @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
+    @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
 
     @State private var month: Date = Calendar.current.startOfMonth(for: .now)
     @State private var selectedCategory: String?
     @State private var selectedAngle: Double?
 
     private var cal: Calendar { Calendar.current }
+    private var activeLedger: Ledger? { ActiveLedger.resolve(ledgers, activeID: activeLedgerID) }
     private var monthTx: [Transaction] {
-        all.filter { cal.isDate($0.date, equalTo: month, toGranularity: .month) }
+        all.filter { $0.ledger?.id == activeLedger?.id
+                     && cal.isDate($0.date, equalTo: month, toGranularity: .month) }
     }
     private var expense: Decimal { monthTx.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }
     private var income: Decimal { monthTx.filter { !$0.isExpense }.reduce(0) { $0 + $1.amount } }

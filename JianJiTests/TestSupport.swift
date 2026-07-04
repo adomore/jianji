@@ -5,12 +5,14 @@ import SwiftData
 /// Shared helpers for the test target.
 enum TestSupport {
 
-    /// A fresh in-memory store seeded with the 12 built-in categories.
+    /// A fresh in-memory store seeded with the 12 built-in categories + default 账本.
     @MainActor
     static func makeSeededContainer() throws -> ModelContainer {
         let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: Transaction.self, Category.self, configurations: config)
+        let container = try ModelContainer(for: Transaction.self, Category.self, Ledger.self,
+                                           configurations: config)
         SeedData.seedIfNeeded(container.mainContext)
+        SeedData.seedLedgerIfNeeded(container.mainContext)
         return container
     }
 
@@ -18,6 +20,13 @@ enum TestSupport {
     static func categories(_ container: ModelContainer) throws -> [Category] {
         try container.mainContext.fetch(
             FetchDescriptor<Category>(sortBy: [SortDescriptor(\.sortOrder)])
+        )
+    }
+
+    @MainActor
+    static func ledgers(_ container: ModelContainer) throws -> [Ledger] {
+        try container.mainContext.fetch(
+            FetchDescriptor<Ledger>(sortBy: [SortDescriptor(\.sortOrder)])
         )
     }
 

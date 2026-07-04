@@ -18,6 +18,7 @@ final class Transaction {
     var amount: Decimal = 0          // always positive; use Decimal, never Double
     var isExpense: Bool = true
     var category: Category?
+    var ledger: Ledger?              // which 账本 this bill belongs to
     var date: Date = Date()          // when the spend happened (user-editable)
     var note: String = ""
     var source: String = EntrySource.manual.rawValue   // manual / voice / image
@@ -30,10 +31,12 @@ final class Transaction {
          date: Date = .now,
          note: String = "",
          source: EntrySource = .manual,
-         rawText: String? = nil) {
+         rawText: String? = nil,
+         ledger: Ledger? = nil) {
         self.amount = amount
         self.isExpense = isExpense
         self.category = category
+        self.ledger = ledger
         self.date = date
         self.note = note
         self.source = source.rawValue

@@ -8,6 +8,8 @@ struct HomeView: View {
     @Environment(\.theme) private var t
     @Environment(\.modelContext) private var context
     @Query(sort: \Transaction.date, order: .reverse) private var all: [Transaction]
+    @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
+    @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
 
     /// First day of the currently displayed month.
     @State private var month: Date = Calendar.current.startOfMonth(for: .now)
@@ -15,9 +17,12 @@ struct HomeView: View {
     @State private var pendingDelete: Transaction?
 
     private var cal: Calendar { Calendar.current }
+    private var activeLedger: Ledger? { ActiveLedger.resolve(ledgers, activeID: activeLedgerID) }
+    /// Only the active book's bills feed the list & summary.
+    private var ledgerTx: [Transaction] { all.filter { $0.ledger?.id == activeLedger?.id } }
 
     private var monthTx: [Transaction] {
-        all.filter { cal.isDate($0.date, equalTo: month, toGranularity: .month) }
+        ledgerTx.filter { cal.isDate($0.date, equalTo: month, toGranularity: .month) }
     }
 
     private var monthExpense: Decimal { monthTx.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }
@@ -53,7 +58,7 @@ struct HomeView: View {
                 }
                 .padding(.top, 4)
                 .padding(.bottom, 120)           // clear the floating tab bar
-                .animation(.easeInOut(duration: 0.25), value: all.count)  // new rows fade in (PRD §5.2.5)
+                .animation(.easeInOut(duration: 0.25), value: ledgerTx.count)  // new rows fade in (PRD §5.2.5)
             }
             .background(t.groupBg.ignoresSafeArea())
             .scrollIndicators(.hidden)

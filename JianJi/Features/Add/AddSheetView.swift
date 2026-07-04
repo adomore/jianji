@@ -11,6 +11,10 @@ struct AddSheetView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Category.sortOrder) private var categories: [Category]
+    @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
+    @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
+
+    private var activeLedger: Ledger? { ActiveLedger.resolve(ledgers, activeID: activeLedgerID) }
 
     @State private var isExpense = true
     @State private var selExpenseID: UUID?
@@ -258,7 +262,8 @@ struct AddSheetView: View {
     private func save(amount: Decimal, category: Category?, date: Date, note: String,
                       isExpense: Bool, source: EntrySource, rawText: String?) {
         let tx = Transaction(amount: amount, isExpense: isExpense, category: category,
-                             date: date, note: note, source: source, rawText: rawText)
+                             date: date, note: note, source: source, rawText: rawText,
+                             ledger: activeLedger)
         context.insert(tx)
         try? context.save()
         Haptics.success()
@@ -297,7 +302,8 @@ struct AddSheetView: View {
                 let tx = Transaction(amount: result.amount ?? 0, isExpense: result.isExpense,
                                      category: result.resolvedCategory(in: categories),
                                      date: result.date, note: result.note, source: result.source,
-                                     rawText: result.rawText.isEmpty ? nil : result.rawText)
+                                     rawText: result.rawText.isEmpty ? nil : result.rawText,
+                                     ledger: activeLedger)
                 context.insert(tx)
                 try? context.save()
                 Haptics.success()

@@ -55,4 +55,23 @@ enum SeedData {
         insert(income, isExpense: false)
         try? context.save()
     }
+
+    /// Ensure a default 账本 exists and every ledger-less bill is assigned to it.
+    /// Idempotent — safe to run on every launch so existing installs migrate cleanly.
+    static func seedLedgerIfNeeded(_ context: ModelContext) {
+        let ledgers = (try? context.fetch(FetchDescriptor<Ledger>())) ?? []
+        let defaultLedger: Ledger
+        if let existing = ledgers.first(where: { $0.isDefault }) ?? ledgers.first {
+            defaultLedger = existing
+        } else {
+            let l = Ledger(name: "默认账本", symbolName: "books.vertical.fill",
+                           colorHex: "FF9500", isDefault: true, sortOrder: 0)
+            context.insert(l)
+            defaultLedger = l
+        }
+        // Reassign orphan bills (created before multi-ledger existed) to the default book.
+        let all = (try? context.fetch(FetchDescriptor<Transaction>())) ?? []
+        for tx in all where tx.ledger == nil { tx.ledger = defaultLedger }
+        try? context.save()
+    }
 }

@@ -55,6 +55,13 @@
 - **品牌启动屏**：橙底 `LaunchBackground` 色值 + 部分清单 `Configs/Info.plist`（`UILaunchScreen`）。清单放在同步分组外，避免被当资源重复打包；`GENERATE_INFOPLIST_FILE=YES` 仍生成并合并其余键。
 - **超小屏**：记账页分类区放入弹性 `ScrollView`，空间不足时网格内部滚动，金额与键盘始终完整可见；参考机型 390×844 观感不变。
 
+## 多账本（账本 tab）
+
+- `Ledger` @Model（名称/图标/颜色/默认/排序）+ `Transaction.ledger` 关系（可选，SwiftData 轻量迁移安全）；首启 `seedLedgerIfNeeded` 建「默认账本」并把无账本的旧账单归入其中（老版本升级平滑）。
+- **活动账本**：`@AppStorage("activeLedgerID")` + `ActiveLedger.resolve`（存储→默认→首个）。首页 / 图表 / 记账全部按活动账本过滤与归属。
+- 账本页可**切换 / 新建 / 改名换图标颜色 / 删除**；删除某账本时其账单移入「默认账本」（不删账单），默认账本不可删——沿用分类「其他」的规则。
+- 测试：`LedgerTests`（播种/迁移/解析/过滤/删除归并）+ `AggregationTests`（signedAmount/全时段聚合/负结余）。
+
 ## 说明 / 边界
 
 - Swift 语言模式设为 **5.0**（`SWIFT_VERSION`），可平滑切到 6.0；工程结构与 API 均按 iOS 17 编写。
