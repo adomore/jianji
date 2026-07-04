@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<style>
+@keyframes jjkSheetUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes jjkFade{from{opacity:0}to{opacity:1}}
+</style>
+</helmet>
+<div data-screen-label="明细首页" style="{{ themeVars }};position:relative;width:390px;height:844px;font-family:-apple-system,BlinkMacSystemFont,'SF Pro Text','PingFang SC','Helvetica Neue',sans-serif;-webkit-font-smoothing:antialiased">
+  <x-import component-from-global-scope="IOSDevice" from="./ios-frame.jsx" width="{{ frameW }}" height="{{ frameH }}" dark="{{ isDark }}" hint-size="390px,844px">
+    <div style="height:100%;position:relative;overflow:hidden">
+      <div style="position:absolute;top:0;left:0;right:0;bottom:0;overflow-y:auto;padding:60px 0 130px;box-sizing:border-box">
+        <div style="padding:8px 20px 12px;font-size:34px;font-weight:700;letter-spacing:0.4px;color:var(--text)">明细</div>
+        <div style="margin:0 16px;background:var(--accent);border-radius:20px;padding:16px 20px 18px;color:#FFFFFF">
+          <div style="display:flex;align-items:center;gap:14px">
+            <span style="font-size:16px;color:rgba(255,255,255,0.7);cursor:pointer;padding:0 4px">‹</span>
+            <span style="font-size:15px;font-weight:600">2026年7月</span>
+            <span style="font-size:16px;color:rgba(255,255,255,0.7);cursor:pointer;padding:0 4px">›</span>
+          </div>
+          <div style="margin-top:14px;font-size:13px;color:rgba(255,255,255,0.85)">本月支出</div>
+          <div style="font-size:36px;font-weight:700;font-variant-numeric:tabular-nums;letter-spacing:-0.5px;line-height:1.25">{{ monthExpText }}</div>
+          <div style="display:flex;gap:32px;margin-top:12px">
+            <div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75)">本月收入</div>
+              <div style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px">{{ monthIncText }}</div>
+            </div>
+            <div>
+              <div style="font-size:12px;color:rgba(255,255,255,0.75)">结余</div>
+              <div style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;margin-top:2px">{{ balText }}</div>
+            </div>
+          </div>
+        </div>
+        <sc-for list="{{ days }}" as="d" hint-placeholder-count="2">
+          <div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:18px 22px 8px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="font-size:13px;font-weight:600;color:var(--text)">{{ d.date }}</span>
+                <span style="font-size:13px;color:var(--sec)">{{ d.dow }}</span>
+                <sc-if value="{{ d.today }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:10px;font-weight:600;color:var(--accent);background:rgba(255,149,0,0.15);padding:2px 6px;border-radius:6px">今天</span>
+                </sc-if>
+              </div>
+              <div style="font-size:12px;color:var(--sec);font-variant-numeric:tabular-nums">{{ d.totalText }}</div>
+            </div>
+            <div style="margin:0 16px;background:var(--card);border-radius:14px;overflow:hidden">
+              <sc-for list="{{ d.rows }}" as="r" hint-placeholder-count="3">
+                <div style="display:flex;align-items:center;gap:12px;padding:11px 14px;position:relative">
+                  <div style="width:38px;height:38px;border-radius:19px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;background:{{ r.tint }}">{{ r.emoji }}</div>
+                  <div style="flex:1;min-width:0">
+                    <div style="font-size:16px;font-weight:500;color:var(--text)">{{ r.name }}</div>
+                    <sc-if value="{{ r.hasNote }}" hint-placeholder-val="{{ false }}">
+                      <div style="font-size:12px;color:var(--sec);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.note }}</div>
+                    </sc-if>
+                  </div>
+                  <div style="font-size:16px;font-weight:600;font-variant-numeric:tabular-nums;color:{{ r.amtColor }}">{{ r.amtText }}</div>
+                  <sc-if value="{{ r.sep }}" hint-placeholder-val="{{ false }}">
+                    <div style="position:absolute;left:64px;right:0;bottom:0;height:0.5px;background:var(--sep)"></div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:82px;box-sizing:border-box;padding:8px 0 26px;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);background:var(--bar);border-top:0.5px solid var(--sep);display:grid;grid-template-columns:1fr 84px 1fr;align-items:center">
+        <div style="display:flex">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+            <svg width="26" height="26" viewBox="0 0 26 26"><rect x="4" y="5.5" width="18" height="2.6" rx="1.3" style="fill:var(--accent)"></rect><rect x="4" y="11.7" width="18" height="2.6" rx="1.3" style="fill:var(--accent)"></rect><rect x="4" y="17.9" width="12" height="2.6" rx="1.3" style="fill:var(--accent)"></rect></svg>
+            <div style="font-size:10px;font-weight:600;color:var(--accent)">明细</div>
+          </div>
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+            <svg width="26" height="26" viewBox="0 0 26 26"><rect x="4.5" y="13" width="4.4" height="8.5" rx="2" style="fill:var(--sec)"></rect><rect x="10.8" y="6" width="4.4" height="15.5" rx="2" style="fill:var(--sec)"></rect><rect x="17.1" y="10" width="4.4" height="11.5" rx="2" style="fill:var(--sec)"></rect></svg>
+            <div style="font-size:10px;font-weight:500;color:var(--sec)">图表</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:center;align-items:center">
+          <div onClick="{{ openSheet }}" style="width:58px;height:58px;border-radius:29px;background:var(--accent);display:flex;align-items:center;justify-content:center;margin-top:-34px;box-shadow:0 6px 16px rgba(255,149,0,0.4);cursor:pointer" style-active="filter:brightness(0.94)">
+            <svg width="26" height="26" viewBox="0 0 26 26"><rect x="11.6" y="4" width="2.8" height="18" rx="1.4" fill="#FFFFFF"></rect><rect x="4" y="11.6" width="18" height="2.8" rx="1.4" fill="#FFFFFF"></rect></svg>
+          </div>
+        </div>
+        <div style="display:flex">
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer">
+            <svg width="26" height="26" viewBox="0 0 26 26"><rect x="4" y="8" width="18" height="2.2" rx="1.1" style="fill:var(--sec)"></rect><circle cx="17" cy="9.1" r="3.4" style="fill:var(--sec);stroke:var(--bar);stroke-width:2"></circle><rect x="4" y="16.5" width="18" height="2.2" rx="1.1" style="fill:var(--sec)"></rect><circle cx="9" cy="17.6" r="3.4" style="fill:var(--sec);stroke:var(--bar);stroke-width:2"></circle></svg>
+            <div style="font-size:10px;font-weight:500;color:var(--sec)">设置</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </x-import>
+  <sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;border-radius:48px;overflow:hidden;z-index:10">
+      <div onClick="{{ closeSheet }}" style="position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);animation:jjkFade 0.25s ease"></div>
+      <div style="position:absolute;left:0;right:0;bottom:0;top:56px;animation:jjkSheetUp 0.36s cubic-bezier(0.32,0.72,0,1);border-radius:14px 14px 0 0;overflow:hidden;box-shadow:0 -8px 40px rgba(0,0,0,0.25)">
+        <dc-import name="AddSheet" dark="{{ isDark }}" on-save="{{ handleSave }}" on-cancel="{{ closeSheet }}" style="width:100%;height:100%" hint-size="390px,788px"></dc-import>
+      </div>
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:139px;height:5px;border-radius:3px;background:var(--ind);z-index:20;pointer-events:none"></div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:390,&quot;height&quot;:844},&quot;dark&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;},&quot;startOpen&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;}}">
+class Component extends DCLogic {
+  state = {
+    open: null,
+    monthExp: 1234.50,
+    monthInc: 8000,
+    days: [
+      { date: '7月4日', dow: '周六', today: true, items: [
+        { emoji: '🍜', name: '餐饮', note: '午饭麻辣烫', amount: 25, income: false, tint: 'rgba(255,149,0,0.16)' },
+        { emoji: '🚇', name: '交通', note: '', amount: 8.5, income: false, tint: 'rgba(0,122,255,0.15)' },
+        { emoji: '🛍️', name: '购物', note: '给猫买罐头', amount: 35, income: false, tint: 'rgba(255,45,85,0.13)' },
+      ]},
+      { date: '7月3日', dow: '周五', today: false, items: [
+        { emoji: '🎮', name: '娱乐', note: '电影票两张', amount: 55, income: false, tint: 'rgba(175,82,222,0.15)' },
+        { emoji: '🚇', name: '交通', note: '打车回家', amount: 23, income: false, tint: 'rgba(0,122,255,0.15)' },
+        { emoji: '🍜', name: '餐饮', note: '晚饭外卖', amount: 42, income: false, tint: 'rgba(255,149,0,0.16)' },
+      ]},
+      { date: '7月2日', dow: '周四', today: false, items: [
+        { emoji: '💰', name: '工资', note: '7月工资', amount: 8000, income: true, tint: 'rgba(52,199,89,0.16)' },
+        { emoji: '🧻', name: '日用', note: '超市囤货', amount: 128.6, income: false, tint: 'rgba(48,176,199,0.16)' },
+        { emoji: '🍜', name: '餐饮', note: '早餐咖啡', amount: 18, income: false, tint: 'rgba(255,149,0,0.16)' },
+      ]},
+    ],
+  };
+
+  fmt(n) { return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
+  renderVals() {
+    const dark = !!this.props.dark;
+    const themeVars = dark
+      ? '--card:#1C1C1E;--text:#FFFFFF;--sec:rgba(235,235,245,0.6);--ter:rgba(235,235,245,0.3);--sep:rgba(84,84,88,0.65);--fill:rgba(120,120,128,0.22);--accent:#FF9F0A;--green:#30D158;--bar:rgba(18,18,20,0.82);--ind:rgba(255,255,255,0.6)'
+      : '--card:#FFFFFF;--text:#000000;--sec:rgba(60,60,67,0.6);--ter:rgba(60,60,67,0.3);--sep:rgba(60,60,67,0.12);--fill:rgba(120,120,128,0.12);--accent:#FF9500;--green:#34C759;--bar:rgba(249,249,249,0.85);--ind:rgba(0,0,0,0.28)';
+    const open = this.state.open === null ? !!this.props.startOpen : this.state.open;
+    const days = this.state.days.map(d => {
+      let exp = 0, inc = 0;
+      d.items.forEach(it => it.income ? inc += it.amount : exp += it.amount);
+      const parts = [];
+      if (inc > 0) parts.push('收入 ¥' + this.fmt(inc));
+      if (exp > 0) parts.push('支出 ¥' + this.fmt(exp));
+      return {
+        date: d.date, dow: d.dow, today: !!d.today, totalText: parts.join(' · '),
+        rows: d.items.map((it, i) => ({
+          emoji: it.emoji, name: it.name, note: it.note, hasNote: !!it.note, tint: it.tint,
+          amtText: (it.income ? '+' : '-') + this.fmt(it.amount),
+          amtColor: it.income ? 'var(--green)' : 'var(--text)',
+          sep: i < d.items.length - 1,
+        })),
+      };
+    });
+    return {
+      frameW: 390, frameH: 844, isDark: dark, themeVars, sheetOpen: open, days,
+      openSheet: () => this.setState({ open: true }),
+      closeSheet: () => this.setState({ open: false }),
+      handleSave: (e) => this.setState(s => {
+        const days = s.days.map(d => ({ ...d, items: [...d.items] }));
+        days[0].items.unshift(e);
+        return {
+          days, open: false,
+          monthExp: s.monthExp + (e.income ? 0 : e.amount),
+          monthInc: s.monthInc + (e.income ? e.amount : 0),
+        };
+      }),
+      monthExpText: '¥' + this.fmt(this.state.monthExp),
+      monthIncText: '¥' + this.fmt(this.state.monthInc),
+      balText: '¥' + this.fmt(this.state.monthInc - this.state.monthExp),
+    };
+  }
+}
+</script>
+</body>
+</html>
