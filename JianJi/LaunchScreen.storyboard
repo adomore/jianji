@@ -14,17 +14,26 @@
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
-                            <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="LaunchArt" translatesAutoresizingMaskIntoConstraints="NO" id="IMG-01-vue">
-                                <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
-                            </imageView>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="¥" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="YEN-lb-001">
+                                <rect key="frame" x="126.5" y="330.5" width="140" height="167"/>
+                                <fontDescription key="fontDescription" type="system" weight="bold" pointSize="140"/>
+                                <color key="textColor" red="1" green="0.58431372549019611" blue="0.0" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="简记" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="TTL-lb-002">
+                                <rect key="frame" x="166.5" y="509.5" width="60" height="41"/>
+                                <fontDescription key="fontDescription" type="system" weight="semibold" pointSize="34"/>
+                                <color key="textColor" red="0.10980392156862745" green="0.10980392156862745" blue="0.11764705882352941" alpha="1" colorSpace="calibratedRGB"/>
+                                <nil key="highlightedColor"/>
+                            </label>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="6Tk-OE-BBY"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                         <constraints>
-                            <constraint firstItem="IMG-01-vue" firstAttribute="top" secondItem="Ze5-6b-2t3" secondAttribute="top" id="cn1-tp-000"/>
-                            <constraint firstItem="IMG-01-vue" firstAttribute="leading" secondItem="Ze5-6b-2t3" secondAttribute="leading" id="cn2-ld-000"/>
-                            <constraint firstItem="Ze5-6b-2t3" firstAttribute="trailing" secondItem="IMG-01-vue" secondAttribute="trailing" id="cn3-tr-000"/>
-                            <constraint firstItem="Ze5-6b-2t3" firstAttribute="bottom" secondItem="IMG-01-vue" secondAttribute="bottom" id="cn4-bt-000"/>
+                            <constraint firstItem="YEN-lb-001" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="cx1-yn-000"/>
+                            <constraint firstItem="YEN-lb-001" firstAttribute="centerY" secondItem="Ze5-6b-2t3" secondAttribute="centerY" constant="-40" id="cy1-yn-000"/>
+                            <constraint firstItem="TTL-lb-002" firstAttribute="centerX" secondItem="Ze5-6b-2t3" secondAttribute="centerX" id="cx2-tt-000"/>
+                            <constraint firstItem="TTL-lb-002" firstAttribute="top" secondItem="YEN-lb-001" secondAttribute="bottom" constant="12" id="tp1-tt-000"/>
                         </constraints>
                     </view>
                 </viewController>
@@ -33,7 +42,4 @@
             <point key="canvasLocation" x="53" y="375"/>
         </scene>
     </scenes>
-    <resources>
-        <image name="LaunchArt" width="393" height="852"/>
-    </resources>
 </document>
