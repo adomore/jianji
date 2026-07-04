@@ -70,8 +70,13 @@ struct TransactionRow: View {
                          color: tx.category?.color ?? Color(hex: "787880"), size: 38)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text(tx.category?.name ?? "其他")
-                    .font(.system(size: 16, weight: .medium)).foregroundStyle(t.text)
+                HStack(spacing: 5) {
+                    Text(tx.category?.name ?? "其他")
+                        .font(.system(size: 16, weight: .medium)).foregroundStyle(t.text)
+                    if tx.isPrivate {
+                        Image(systemName: "lock.fill").font(.system(size: 10)).foregroundStyle(t.ter)
+                    }
+                }
                 if !tx.note.isEmpty {
                     Text(tx.note)
                         .font(.system(size: 12)).foregroundStyle(t.sec).lineLimit(1)

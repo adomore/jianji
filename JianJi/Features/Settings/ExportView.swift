@@ -6,14 +6,17 @@ import UIKit
 struct ExportView: View {
     @Environment(\.colorScheme) private var scheme
     @Query(sort: \Transaction.date, order: .reverse) private var all: [Transaction]
+    @EnvironmentObject private var privacy: PrivacyGate
 
     @State private var csvURL: URL?
     @State private var shareImage: Image?
     @State private var prepared = false
 
     private var t: Theme { Theme(scheme) }
-    private var income: Decimal { all.filter { !$0.isExpense }.reduce(0) { $0 + $1.amount } }
-    private var expense: Decimal { all.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }
+    /// Never export hidden private bills unless the user has revealed them this session.
+    private var visible: [Transaction] { all.filter { privacy.revealed || !$0.isPrivate } }
+    private var income: Decimal { visible.filter { !$0.isExpense }.reduce(0) { $0 + $1.amount } }
+    private var expense: Decimal { visible.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }
 
     var body: some View {
         List {
@@ -62,7 +65,7 @@ struct ExportView: View {
     private func writeCSV() -> URL? {
         var rows = ["日期,类型,分类,金额,备注,账本"]
         let df = DateFormatter(); df.locale = Locale(identifier: "en_US_POSIX"); df.dateFormat = "yyyy-MM-dd"
-        for tx in all {
+        for tx in visible {
             let date = df.string(from: tx.date)
             let type = tx.isExpense ? "支出" : "收入"
             let cat = tx.category?.name ?? "其他"
@@ -89,7 +92,7 @@ struct ExportView: View {
             summaryRow("总支出", Fmt.money(expense), .black)
             summaryRow("结余", Fmt.money(balance), balance >= 0 ? .black : Color(hex: "FF3B30"))
             Divider()
-            Text("共 \(all.count) 笔记录").font(.system(size: 13)).foregroundStyle(.gray)
+            Text("共 \(visible.count) 笔记录").font(.system(size: 13)).foregroundStyle(.gray)
         }
         .padding(24)
         .frame(width: 360, alignment: .leading)

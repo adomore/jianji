@@ -9,6 +9,7 @@ struct LedgerView: View {
     @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
     @Query private var all: [Transaction]
     @AppStorage(ActiveLedger.storageKey) private var activeID = ""
+    @EnvironmentObject private var privacy: PrivacyGate
 
     @State private var showAdd = false
     @State private var editing: Ledger?
@@ -118,7 +119,7 @@ struct LedgerView: View {
     // MARK: actions
 
     private func stats(_ l: Ledger) -> (count: Int, income: Decimal, expense: Decimal) {
-        let tx = all.filter { $0.ledger?.id == l.id }
+        let tx = all.filter { $0.ledger?.id == l.id && (privacy.revealed || !$0.isPrivate) }
         let income = tx.filter { !$0.isExpense }.reduce(Decimal(0)) { $0 + $1.amount }
         let expense = tx.filter { $0.isExpense }.reduce(Decimal(0)) { $0 + $1.amount }
         return (tx.count, income, expense)

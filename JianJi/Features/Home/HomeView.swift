@@ -11,6 +11,7 @@ struct HomeView: View {
     @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
     @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
     @AppStorage("monthlyBudget") private var monthlyBudget: Double = 0
+    @EnvironmentObject private var privacy: PrivacyGate
 
     /// First day of the currently displayed month.
     @State private var month: Date = Calendar.current.startOfMonth(for: .now)
@@ -19,8 +20,14 @@ struct HomeView: View {
 
     private var cal: Calendar { Calendar.current }
     private var activeLedger: Ledger? { ActiveLedger.resolve(ledgers, activeID: activeLedgerID) }
-    /// Only the active book's bills feed the list & summary.
-    private var ledgerTx: [Transaction] { all.filter { $0.ledger?.id == activeLedger?.id } }
+    /// Only the active book's bills feed the list & summary; private bills stay out until revealed.
+    private var ledgerTx: [Transaction] {
+        all.filter { $0.ledger?.id == activeLedger?.id && (privacy.revealed || !$0.isPrivate) }
+    }
+    /// True when the active book has private bills currently hidden.
+    private var hasHiddenPrivate: Bool {
+        !privacy.revealed && all.contains { $0.ledger?.id == activeLedger?.id && $0.isPrivate }
+    }
 
     private var monthTx: [Transaction] {
         ledgerTx.filter { cal.isDate($0.date, equalTo: month, toGranularity: .month) }
@@ -31,6 +38,16 @@ struct HomeView: View {
     /// Budget only applies to the current month (past months don't show a cap).
     private var displayBudget: Decimal {
         cal.isDate(month, equalTo: .now, toGranularity: .month) ? Decimal(monthlyBudget) : 0
+    }
+
+    @ViewBuilder private var privacyButton: some View {
+        if privacy.revealed {
+            Button { privacy.hide() } label: { Image(systemName: "eye.slash") }
+                .accessibilityLabel("隐藏隐私账单")
+        } else if hasHiddenPrivate {
+            Button { privacy.reveal() } label: { Image(systemName: "lock.fill") }
+                .accessibilityLabel("显示隐私账单")
+        }
     }
 
     /// Transactions grouped by day, days sorted newest-first.
@@ -70,6 +87,9 @@ struct HomeView: View {
             .scrollIndicators(.hidden)
             .navigationTitle("明细")             // system large title → consistent with 设置
             .navigationBarTitleDisplayMode(.large)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) { privacyButton }
+            }
             // Swipe left-right to change month (kept simultaneous so vertical scroll still works).
             .simultaneousGesture(
                 DragGesture(minimumDistance: 30)

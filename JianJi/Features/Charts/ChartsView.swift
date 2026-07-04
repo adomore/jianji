@@ -9,6 +9,7 @@ struct ChartsView: View {
     @Query(sort: \Transaction.date, order: .reverse) private var all: [Transaction]
     @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
     @AppStorage(ActiveLedger.storageKey) private var activeLedgerID = ""
+    @EnvironmentObject private var privacy: PrivacyGate
 
     @State private var month: Date = Calendar.current.startOfMonth(for: .now)
     @State private var selectedCategory: String?
@@ -18,6 +19,7 @@ struct ChartsView: View {
     private var activeLedger: Ledger? { ActiveLedger.resolve(ledgers, activeID: activeLedgerID) }
     private var monthTx: [Transaction] {
         all.filter { $0.ledger?.id == activeLedger?.id
+                     && (privacy.revealed || !$0.isPrivate)
                      && cal.isDate($0.date, equalTo: month, toGranularity: .month) }
     }
     private var expense: Decimal { monthTx.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }

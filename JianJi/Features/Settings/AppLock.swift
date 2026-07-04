@@ -29,6 +29,29 @@ final class AppLock: ObservableObject {
     func lock() { isUnlocked = false; failed = false }
 }
 
+/// Session reveal state for per-bill privacy. Private bills stay hidden (and out of totals)
+/// until `reveal()` passes Face ID / passcode; hidden again on background.
+@MainActor
+final class PrivacyGate: ObservableObject {
+    @Published var revealed = false
+
+    func reveal() {
+        let ctx = LAContext()
+        ctx.localizedFallbackTitle = "输入密码"
+        var err: NSError?
+        guard ctx.canEvaluatePolicy(.deviceOwnerAuthentication, error: &err) else {
+            revealed = true   // no passcode set → can't gate; just show
+            return
+        }
+        ctx.evaluatePolicy(.deviceOwnerAuthentication,
+                           localizedReason: "查看隐私账单需要验证身份") { ok, _ in
+            Task { @MainActor in self.revealed = ok }
+        }
+    }
+
+    func hide() { revealed = false }
+}
+
 /// Full-screen cover shown while the app is locked.
 struct LockView: View {
     @Environment(\.colorScheme) private var scheme

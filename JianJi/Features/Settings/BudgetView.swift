@@ -9,6 +9,7 @@ struct BudgetView: View {
     @AppStorage(ActiveLedger.storageKey) private var activeID = ""
     @Query private var all: [Transaction]
     @Query(sort: \Ledger.sortOrder) private var ledgers: [Ledger]
+    @EnvironmentObject private var privacy: PrivacyGate
 
     @State private var text = ""
     @FocusState private var focused: Bool
@@ -20,6 +21,7 @@ struct BudgetView: View {
         let active = ActiveLedger.resolve(ledgers, activeID: activeID)
         return all.filter {
             $0.isExpense && $0.ledger?.id == active?.id
+            && (privacy.revealed || !$0.isPrivate)
             && cal.isDate($0.date, equalTo: .now, toGranularity: .month)
         }.reduce(0) { $0 + $1.amount }
     }

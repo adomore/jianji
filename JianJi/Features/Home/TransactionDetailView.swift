@@ -68,6 +68,17 @@ struct TransactionDetailView: View {
                 }
 
                 Section {
+                    Toggle(isOn: $transaction.isPrivate) {
+                        HStack(spacing: 8) {
+                            Image(systemName: "lock.fill").foregroundStyle(t.accent)
+                            Text("隐私记账")
+                        }
+                    }
+                } footer: {
+                    Text("开启后此笔账单默认隐藏，需 Face ID / 密码验证才显示。")
+                }
+
+                Section {
                     Button(role: .destructive) { showDelete = true } label: {
                         HStack { Spacer(); Text("删除账单"); Spacer() }
                     }

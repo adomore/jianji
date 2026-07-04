@@ -22,6 +22,7 @@ struct AddSheetView: View {
     @State private var amount = AmountInput()
     @State private var note = ""
     @State private var date = Date()
+    @State private var isPrivate = false
     @State private var caretOn = true
 
     @State private var showDatePicker = false
@@ -178,6 +179,16 @@ struct AddSheetView: View {
                 .background(t.fill, in: RoundedRectangle(cornerRadius: 10))
             }
             .buttonStyle(.plain)
+
+            Button { isPrivate.toggle(); Haptics.tap() } label: {
+                Image(systemName: isPrivate ? "lock.fill" : "lock.open")
+                    .font(.system(size: 16))
+                    .foregroundStyle(isPrivate ? .white : t.sec)
+                    .frame(width: 40, height: 40)
+                    .background(isPrivate ? t.accent : t.fill, in: RoundedRectangle(cornerRadius: 10))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(isPrivate ? "隐私记账已开" : "标记为隐私记账")
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 10)
@@ -219,33 +230,38 @@ struct AddSheetView: View {
     }
 
     private var keypad: some View {
+        // Four equal columns (3 digit columns + a tall 完成) so the pad fills the width
+        // and 完成 matches the key width on any screen — no dead space on the sides.
         HStack(alignment: .top, spacing: 8) {
-            // 3-column digit grid (4 rows).
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3),
-                      spacing: 8) {
-                ForEach(["1","2","3","4","5","6","7","8","9",".","0","⌫"], id: \.self) { k in
-                    Button { press(k) } label: {
-                        Text(k)
-                            .font(.system(size: 25, weight: .medium)).foregroundStyle(t.text)
-                            .frame(maxWidth: .infinity).frame(height: 52)
-                            .background(t.fill, in: RoundedRectangle(cornerRadius: 12))
-                    }
-                    .buttonStyle(PressableStyle())
-                    .accessibilityLabel(k == "⌫" ? "删除" : k)
-                }
-            }
-            // Tall 完成 key.
+            keyColumn(["1", "4", "7", "."])
+            keyColumn(["2", "5", "8", "0"])
+            keyColumn(["3", "6", "9", "⌫"])
             Button(action: done) {
                 Text("完成")
                     .font(.system(size: 19, weight: .semibold)).foregroundStyle(.white)
-                    .frame(width: 78).frame(height: 52 * 4 + 8 * 3)
+                    .frame(maxWidth: .infinity).frame(height: 52 * 4 + 8 * 3)
                     .background(t.accent, in: RoundedRectangle(cornerRadius: 12))
                     .opacity(amount.isValid ? 1 : 0.45)
             }
             .buttonStyle(PressableStyle(scale: 0.98))
         }
-        .padding(.horizontal, 12)
+        .padding(.horizontal, 10)
         .padding(.top, 4)
+    }
+
+    private func keyColumn(_ keys: [String]) -> some View {
+        VStack(spacing: 8) {
+            ForEach(keys, id: \.self) { k in
+                Button { press(k) } label: {
+                    Text(k)
+                        .font(.system(size: 25, weight: .medium)).foregroundStyle(t.text)
+                        .frame(maxWidth: .infinity).frame(height: 52)
+                        .background(t.fill, in: RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(PressableStyle())
+                .accessibilityLabel(k == "⌫" ? "删除" : k)
+            }
+        }
     }
 
     private var datePickerSheet: some View {
@@ -287,7 +303,7 @@ struct AddSheetView: View {
                       isExpense: Bool, source: EntrySource, rawText: String?) {
         let tx = Transaction(amount: amount, isExpense: isExpense, category: category,
                              date: date, note: note, source: source, rawText: rawText,
-                             ledger: activeLedger)
+                             ledger: activeLedger, isPrivate: isPrivate)
         context.insert(tx)
         try? context.save()
         Haptics.success()

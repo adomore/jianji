@@ -43,4 +43,23 @@ final class AggregationTests: XCTestCase {
         XCTAssertTrue(balance < 0)              // 触发结余红胶囊
         XCTAssertEqual(balance, -500)
     }
+
+    /// Private bills default to false and are excluded from totals until revealed.
+    func testPrivateFiltering() throws {
+        let c = try TestSupport.makeSeededContainer()
+        let ctx = c.mainContext
+        let food = try TestSupport.categories(c).first { $0.name == "餐饮" }!
+        ctx.insert(Transaction(amount: 25, isExpense: true, category: food))                      // normal
+        ctx.insert(Transaction(amount: 999, isExpense: true, category: food, isPrivate: true))     // private
+        try ctx.save()
+
+        let all = try ctx.fetch(FetchDescriptor<Transaction>())
+        XCTAssertEqual(all.filter { !$0.isPrivate }.count, 1)                                       // default false
+        // hidden (revealed = false)
+        let hiddenSum = all.filter { false || !$0.isPrivate }.reduce(Decimal(0)) { $0 + $1.amount }
+        XCTAssertEqual(hiddenSum, 25)
+        // revealed = true
+        let revealedSum = all.filter { true || !$0.isPrivate }.reduce(Decimal(0)) { $0 + $1.amount }
+        XCTAssertEqual(revealedSum, 1024)
+    }
 }

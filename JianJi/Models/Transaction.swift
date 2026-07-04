@@ -23,6 +23,7 @@ final class Transaction {
     var note: String = ""
     var source: String = EntrySource.manual.rawValue   // manual / voice / image
     var rawText: String?             // voice transcript or OCR full text, for debugging
+    var isPrivate: Bool = false      // hidden until Face ID / passcode (per-bill privacy)
     var createdAt: Date = Date()
 
     init(amount: Decimal,
@@ -32,7 +33,8 @@ final class Transaction {
          note: String = "",
          source: EntrySource = .manual,
          rawText: String? = nil,
-         ledger: Ledger? = nil) {
+         ledger: Ledger? = nil,
+         isPrivate: Bool = false) {
         self.amount = amount
         self.isExpense = isExpense
         self.category = category
@@ -41,6 +43,7 @@ final class Transaction {
         self.note = note
         self.source = source.rawValue
         self.rawText = rawText
+        self.isPrivate = isPrivate
         self.createdAt = .now
     }
 

@@ -8,6 +8,7 @@ struct LedgerReportView: View {
     @Environment(\.modelContext) private var context
     @Query private var all: [Transaction]
     @AppStorage(ActiveLedger.storageKey) private var activeID = ""
+    @EnvironmentObject private var privacy: PrivacyGate
 
     let ledger: Ledger
 
@@ -21,6 +22,7 @@ struct LedgerReportView: View {
 
     private var monthTx: [Transaction] {
         all.filter { $0.ledger?.id == ledger.id
+                     && (privacy.revealed || !$0.isPrivate)
                      && cal.isDate($0.date, equalTo: month, toGranularity: .month) }
     }
     private var expense: Decimal { monthTx.filter { $0.isExpense }.reduce(0) { $0 + $1.amount } }
